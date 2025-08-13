@@ -1,0 +1,57 @@
+<h1>Gestión de Calendarios</h1>
+<p>Programa y gestiona eventos de limpieza, desparasitación y otras tareas.</p>
+
+<form id="form-evento" class="data-form">
+    <input type="hidden" id="evento-index">
+    <div class="form-group">
+        <label for="fecha-evento">Fecha:</label>
+        <input type="date" id="fecha-evento" name="fecha-evento" required>
+    </div>
+    <div class="form-group">
+        <label for="tipo-evento">Tipo de Evento:</label>
+        <select id="tipo-evento" name="tipo-evento" required>
+            <option value="">Seleccione tipo...</option>
+            <option value="Limpieza">Limpieza</option>
+            <option value="Desparasitación">Desparasitación</option>
+            <option value="Mantenimiento">Mantenimiento</option>
+            <option value="Vacunación">Vacunación</option>
+            <option value="Otro">Otro</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="descripcion-evento">Descripción:</label>
+        <textarea id="descripcion-evento" name="descripcion-evento" rows="3" required placeholder="Ej: Limpieza de corrales 1 y 2, Desparasitación de lechones"></textarea>
+    </div>
+    <div class="form-group">
+        <label for="responsable-evento">Responsable:</label>
+        <input type="text" id="responsable-evento" name="responsable-evento" placeholder="Ej: Juan Pérez, Equipo A">
+    </div>
+    <div class="form-group">
+        <label for="estado-evento">Estado:</label>
+        <select id="estado-evento" name="estado-evento" required>
+            <option value="Pendiente">Pendiente</option>
+            <option value="Completado">Completado</option>
+            <option value="Cancelado">Cancelado</option>
+        </select>
+    </div>
+    <button type="submit" class="btn-submit">Agregar Evento</button>
+</form>
+
+<hr class="section-divider">
+
+<h2>Eventos Programados</h2>
+<table id="tabla-eventos" class="data-table">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Descripción</th>
+            <th>Responsable</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Las filas de los eventos se insertarán aquí -->
+    </tbody>
+</table>

@@ -1,0 +1,40 @@
+<h1>Gestión de Clientes</h1>
+<p>Añade, edita y gestiona la información de tus clientes.</p>
+
+<form id="form-cliente" class="data-form">
+    <div class="form-group">
+        <label for="nombre">Nombre Completo:</label>
+        <input type="text" id="nombre" name="nombre" required>
+    </div>
+    <div class="form-group">
+        <label for="telefono">Teléfono:</label>
+        <input type="tel" id="telefono" name="telefono">
+    </div>
+    <div class="form-group">
+        <label for="email">Correo Electrónico:</label>
+        <input type="email" id="email" name="email">
+    </div>
+    <div class="form-group">
+        <label for="direccion">Dirección:</label>
+        <textarea id="direccion" name="direccion" rows="3"></textarea>
+    </div>
+    <button type="submit" class="btn-submit">Agregar Cliente</button>
+</form>
+
+<hr class="section-divider">
+
+<h2>Lista de Clientes</h2>
+<table id="tabla-clientes" class="data-table">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Teléfono</th>
+            <th>Email</th>
+            <th>Dirección</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Las filas de los clientes se insertarán aquí -->
+    </tbody>
+</table>

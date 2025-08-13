@@ -1,0 +1,54 @@
+<h1>Gestión de Proveedores</h1>
+<p>Administra la información de tus proveedores.</p>
+
+<form id="form-proveedor" class="data-form">
+    <input type="hidden" id="proveedor-index">
+    <div class="form-group">
+        <label for="nombre-proveedor">Nombre del Proveedor:</label>
+        <input type="text" id="nombre-proveedor" name="nombre-proveedor" required>
+    </div>
+    <div class="form-group">
+        <label for="persona-contacto">Persona de Contacto:</label>
+        <input type="text" id="persona-contacto" name="persona-contacto">
+    </div>
+    <div class="form-group">
+        <label for="telefono-proveedor">Teléfono:</label>
+        <input type="tel" id="telefono-proveedor" name="telefono-proveedor">
+    </div>
+    <div class="form-group">
+        <label for="email-proveedor">Correo Electrónico:</label>
+        <input type="email" id="email-proveedor" name="email-proveedor">
+    </div>
+    <div class="form-group">
+        <label for="direccion-proveedor">Dirección:</label>
+        <textarea id="direccion-proveedor" name="direccion-proveedor" rows="3"></textarea>
+    </div>
+    <div class="form-group">
+        <label for="productos-servicios">Productos/Servicios Suministrados:</label>
+        <textarea id="productos-servicios" name="productos-servicios" rows="3" placeholder="Ej: Alimento para cerdos, Medicamentos, Servicios de transporte"></textarea>
+    </div>
+    <div class="form-group">
+        <label for="terminos-pago">Términos de Pago:</label>
+        <input type="text" id="terminos-pago" name="terminos-pago" placeholder="Ej: 30 días, Contado, etc.">
+    </div>
+    <button type="submit" class="btn-submit">Agregar Proveedor</button>
+</form>
+
+<hr class="section-divider">
+
+<h2>Lista de Proveedores</h2>
+<table id="tabla-proveedores" class="data-table">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Contacto</th>
+            <th>Teléfono</th>
+            <th>Email</th>
+            <th>Productos/Servicios</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Las filas de los proveedores se insertarán aquí -->
+    </tbody>
+</table>

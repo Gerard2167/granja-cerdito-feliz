@@ -1,0 +1,24 @@
+<h1>Proyecciones de Ingresos y Ventas</h1>
+<p>Análisis de ventas históricas y proyecciones futuras.</p>
+
+<div class="projection-controls data-form">
+    <div class="form-group">
+        <label for="periodos-proyeccion">Proyectar para los próximos (meses):</label>
+        <input type="number" id="periodos-proyeccion" value="3" min="1" max="12">
+    </div>
+    <button type="button" id="generar-proyeccion" class="btn-submit">Generar Proyección</button>
+</div>
+
+<hr class="section-divider">
+
+<h2>Ventas Históricas por Mes</h2>
+<div id="historial-ventas" class="recent-transactions">
+    <p style="text-align: center; color: #777;">Cargando historial de ventas...</p>
+</div>
+
+<hr class="section-divider">
+
+<h2>Proyecciones de Ventas</h2>
+<div id="proyecciones-futuras" class="recent-transactions">
+    <p style="text-align: center; color: #777;">Genera una proyección para ver los resultados.</p>
+</div>

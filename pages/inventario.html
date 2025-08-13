@@ -1,0 +1,54 @@
+<h1>Gestión de Inventario</h1>
+<p>Añade, edita y gestiona los productos de tu inventario.</p>
+
+<form id="form-producto" class="data-form">
+    <input type="hidden" id="producto-index">
+    <div class="form-group">
+        <label for="nombre-producto">Nombre del Producto:</label>
+        <input type="text" id="nombre-producto" name="nombre-producto" required>
+    </div>
+    <div class="form-group">
+        <label for="descripcion-producto">Descripción:</label>
+        <textarea id="descripcion-producto" name="descripcion-producto" rows="3"></textarea>
+    </div>
+    <div class="form-group">
+        <label for="stock-actual">Stock Actual:</label>
+        <input type="number" id="stock-actual" name="stock-actual" required min="0" step="1">
+    </div>
+    <div class="form-group">
+        <label for="unidad-medida">Unidad de Medida:</label>
+        <input type="text" id="unidad-medida" name="unidad-medida" placeholder="Ej: kg, unidad, caja">
+    </div>
+    <div class="form-group">
+        <label for="precio-compra">Precio de Compra ($):</label>
+        <input type="number" id="precio-compra" name="precio-compra" min="0" step="0.01">
+    </div>
+    <div class="form-group">
+        <label for="precio-venta">Precio de Venta ($):</label>
+        <input type="number" id="precio-venta" name="precio-venta" required min="0" step="0.01">
+    </div>
+    <div class="form-group">
+        <label for="proveedor-producto">Proveedor:</label>
+        <input type="text" id="proveedor-producto" name="proveedor-producto">
+    </div>
+    <button type="submit" class="btn-submit">Agregar Producto</button>
+</form>
+
+<hr class="section-divider">
+
+<h2>Lista de Productos en Inventario</h2>
+<table id="tabla-productos" class="data-table">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Stock</th>
+            <th>Unidad</th>
+            <th>P. Venta</th>
+            <th>Proveedor</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Las filas de los productos se insertarán aquí -->
+    </tbody>
+</table>

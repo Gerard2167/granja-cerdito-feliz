@@ -1,0 +1,63 @@
+<h1>Gestión de Ventas</h1>
+<p>Registra nuevas ventas y consulta el historial.</p>
+
+<form id="form-venta" class="data-form">
+    <input type="hidden" id="venta-index">
+    <div class="form-group">
+        <label for="cliente-venta">Cliente:</label>
+        <select id="cliente-venta" name="cliente-venta" required>
+            <option value="">Seleccione un cliente...</option>
+            <!-- Los clientes se cargarán aquí dinámicamente -->
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="producto">Producto Vendido:</label>
+        <select id="producto" name="producto" required>
+            <option value="">Seleccione un producto...</option>
+            <!-- Los productos se cargarán aquí dinámicamente -->
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="cantidad">Cantidad:</label>
+        <input type="number" id="cantidad" name="cantidad" required min="0" step="1">
+    </div>
+    <div class="form-group">
+        <label for="precio-unitario">Precio Unitario ($):</label>
+        <input type="number" id="precio-unitario" name="precio-unitario" required min="0" step="0.01">
+    </div>
+    <div class="form-group">
+        <label for="total-venta">Total Venta ($):</label>
+        <input type="text" id="total-venta" name="total-venta" readonly style="background-color: #eee;">
+    </div>
+    <div class="form-group">
+        <label for="fecha-venta">Fecha de Venta:</label>
+        <input type="date" id="fecha-venta" name="fecha-venta" required>
+    </div>
+    <div class="form-group">
+        <label for="estado-pago">Estado del Pago:</label>
+        <select id="estado-pago" name="estado-pago" required>
+            <option value="Pagado">Pagado</option>
+            <option value="Pendiente">Pendiente</option>
+        </select>
+    </div>
+    <button type="submit" class="btn-submit">Registrar Venta</button>
+</form>
+
+<hr class="section-divider">
+
+<h2>Historial de Ventas</h2>
+<table id="tabla-ventas" class="data-table">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Producto</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Las filas de las ventas se insertarán aquí -->
+    </tbody>
+</table>
