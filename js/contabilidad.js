@@ -8,14 +8,33 @@ const totalEgresosEl = document.getElementById('total-egresos');
 const balanceNetoEl = document.getElementById('balance-neto');
 const recentTransactionsEl = document.querySelector('.recent-transactions');
 
+const API_URL_VENTAS = 'http://localhost:3000/api/ventas';
+const API_URL_GASTOS = 'http://localhost:3000/api/gastos';
+const API_URL_PAGOS = 'http://localhost:3000/api/pagos';
+
 if (totalVentasEl && totalGastosEl && totalIngresosEl && totalEgresosEl && balanceNetoEl) {
 
-    const formatCurrency = (amount) => `$${amount.toFixed(2)}`;
+    const formatCurrency = (amount) => `${amount.toFixed(2)}`;
 
-    const cargarResumenContable = () => {
-        const ventas = JSON.parse(localStorage.getItem('ventas')) || [];
-        const gastos = JSON.parse(localStorage.getItem('gastos')) || [];
-        const pagos = JSON.parse(localStorage.getItem('pagos')) || [];
+    const fetchData = async (url) => {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error(`Error fetching data from ${url}:`, error);
+            return [];
+        }
+    };
+
+    const cargarResumenContable = async () => {
+        const [ventas, gastos, pagos] = await Promise.all([
+            fetchData(API_URL_VENTAS),
+            fetchData(API_URL_GASTOS),
+            fetchData(API_URL_PAGOS)
+        ]);
 
         let totalVentas = 0;
         ventas.forEach(venta => {

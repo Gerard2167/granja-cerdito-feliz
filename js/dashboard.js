@@ -12,16 +12,38 @@ const dashboardVentasRecientesEl = document.getElementById('dashboard-ventas-rec
 const dashboardGastosRecientesEl = document.getElementById('dashboard-gastos-recientes');
 const dashboardEventosProximosEl = document.getElementById('dashboard-eventos-proximos');
 
+const API_URL_VENTAS = 'http://localhost:3000/api/ventas';
+const API_URL_GASTOS = 'http://localhost:3000/api/gastos';
+const API_URL_CLIENTES = 'http://localhost:3000/api/clientes';
+const API_URL_INVENTARIO = 'http://localhost:3000/api/inventario';
+const API_URL_CALENDARIOS = 'http://localhost:3000/api/calendarios';
+
+
 if (dashboardVentasMesEl) { // Check if at least one element exists
 
-    const formatCurrency = (amount) => `$${amount.toFixed(2)}`;
+    const formatCurrency = (amount) => `${amount.toFixed(2)}`;
 
-    const loadDashboardData = () => {
-        const ventas = JSON.parse(localStorage.getItem('ventas')) || [];
-        const gastos = JSON.parse(localStorage.getItem('gastos')) || [];
-        const clientes = JSON.parse(localStorage.getItem('clientes')) || [];
-        const inventario = JSON.parse(localStorage.getItem('inventario')) || [];
-        const calendarioEventos = JSON.parse(localStorage.getItem('calendarioEventos')) || [];
+    const fetchData = async (url) => {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error(`Error fetching data from ${url}:`, error);
+            return [];
+        }
+    };
+
+    const loadDashboardData = async () => {
+        const [ventas, gastos, clientes, inventario, calendarioEventos] = await Promise.all([
+            fetchData(API_URL_VENTAS),
+            fetchData(API_URL_GASTOS),
+            fetchData(API_URL_CLIENTES),
+            fetchData(API_URL_INVENTARIO),
+            fetchData(API_URL_CALENDARIOS)
+        ]);
 
         const today = new Date();
         const currentMonth = today.getMonth();
@@ -108,7 +130,7 @@ if (dashboardVentasMesEl) { // Check if at least one element exists
         const upcomingEvents = calendarioEventos.filter(evento => {
             const eventDate = new Date(evento.fecha);
             return eventDate >= today && evento.estado === 'Pendiente';
-        }).sort((a, b) => new Date(a.fecha) - new Date(b.fecha)).slice(0, 5);
+        }).sort((a, b) => new Date(a.fecha) - new Date(a.fecha)).slice(0, 5);
 
         if (upcomingEvents.length === 0) {
             dashboardEventosProximosEl.innerHTML = '<p style="text-align: center; color: #777;">No hay eventos próximos.</p>';

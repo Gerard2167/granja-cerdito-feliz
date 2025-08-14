@@ -6,12 +6,27 @@ const periodosProyeccionInput = document.getElementById('periodos-proyeccion');
 const historialVentasDiv = document.getElementById('historial-ventas');
 const proyeccionesFuturasDiv = document.getElementById('proyecciones-futuras');
 
+const API_URL_VENTAS = 'http://localhost:3000/api/ventas';
+
 if (generarProyeccionBtn && historialVentasDiv && proyeccionesFuturasDiv) {
 
-    const formatCurrency = (amount) => `$${amount.toFixed(2)}`;
+    const formatCurrency = (amount) => `${amount.toFixed(2)}`;
 
-    const calcularProyecciones = () => {
-        const ventas = JSON.parse(localStorage.getItem('ventas')) || [];
+    const fetchData = async (url) => {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error(`Error fetching data from ${url}:`, error);
+            return [];
+        }
+    };
+
+    const calcularProyecciones = async () => {
+        const ventas = await fetchData(API_URL_VENTAS);
 
         // 1. Agrupar ventas por mes
         const ventasPorMes = {};
