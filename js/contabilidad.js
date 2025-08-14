@@ -8,9 +8,9 @@ const totalEgresosEl = document.getElementById('total-egresos');
 const balanceNetoEl = document.getElementById('balance-neto');
 const recentTransactionsEl = document.querySelector('.recent-transactions');
 
-const API_URL_VENTAS = 'http://localhost:3000/api/ventas';
-const API_URL_GASTOS = 'http://localhost:3000/api/gastos';
-const API_URL_PAGOS = 'http://localhost:3000/api/pagos';
+const API_URL_VENTAS = 'http://192.168.0.13:3000/api/ventas';
+const API_URL_GASTOS = 'http://192.168.0.13:3000/api/gastos';
+const API_URL_PAGOS = 'http://192.168.0.13:3000/api/pagos';
 
 if (totalVentasEl && totalGastosEl && totalIngresosEl && totalEgresosEl && balanceNetoEl) {
 

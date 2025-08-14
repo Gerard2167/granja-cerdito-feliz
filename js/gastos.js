@@ -5,7 +5,7 @@ const formGasto = document.getElementById('form-gasto');
 const tablaGastosBody = document.querySelector('#tabla-gastos tbody');
 const submitButton = formGasto ? formGasto.querySelector('button[type="submit"]') : null;
 
-const API_URL_GASTOS = 'http://localhost:3000/api/gastos';
+const API_URL_GASTOS = 'http://192.168.0.13:3000/api/gastos';
 
 if (!formGasto || !tablaGastosBody) {
     return;

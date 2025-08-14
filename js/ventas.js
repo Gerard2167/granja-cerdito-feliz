@@ -10,10 +10,10 @@ const precioUnitarioInput = document.getElementById('precio-unitario');
 const totalVentaInput = document.getElementById('total-venta');
 const submitButton = formVenta ? formVenta.querySelector('button[type="submit"]') : null;
 
-const API_URL_VENTAS = 'http://localhost:3000/api/ventas';
-const API_URL_CLIENTES = 'http://localhost:3000/api/clientes';
-const API_URL_INVENTARIO = 'http://localhost:3000/api/inventario'; // Asumiendo que Inventario también tendrá API
-const API_URL_SEQUENCE = 'http://localhost:3000/api/sequence';
+const API_URL_VENTAS = 'http://192.168.0.13:3000/api/ventas';
+const API_URL_CLIENTES = 'http://192.168.0.13:3000/api/clientes';
+const API_URL_INVENTARIO = 'http://192.168.0.13:3000/api/inventario'; // Asumiendo que Inventario también tendrá API
+const API_URL_SEQUENCE = 'http://192.168.0.13:3000/api/sequence';
 
 if (!formVenta || !tablaVentasBody) {
     return;

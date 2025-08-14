@@ -5,7 +5,7 @@ const formProveedor = document.getElementById('form-proveedor');
 const tablaProveedoresBody = document.querySelector('#tabla-proveedores tbody');
 const submitButton = formProveedor ? formProveedor.querySelector('button[type="submit"]') : null;
 
-const API_URL_PROVEEDORES = 'http://localhost:3000/api/proveedores';
+const API_URL_PROVEEDORES = 'http://192.168.0.13:3000/api/proveedores';
 
 if (!formProveedor || !tablaProveedoresBody) {
     return;

@@ -5,7 +5,7 @@ const formColaborador = document.getElementById('form-colaborador');
 const tablaColaboradoresBody = document.querySelector('#tabla-colaboradores tbody');
 const submitButton = formColaborador ? formColaborador.querySelector('button[type="submit"]') : null;
 
-const API_URL_COLABORADORES = 'http://localhost:3000/api/colaboradores';
+const API_URL_COLABORADORES = 'http://192.168.0.13:3000/api/colaboradores';
 
 if (!formColaborador || !tablaColaboradoresBody) {
     return;

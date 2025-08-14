@@ -5,8 +5,8 @@ const formPago = document.getElementById('form-pago');
 const tablaPagosBody = document.querySelector('#tabla-pagos tbody');
 const submitButton = formPago ? formPago.querySelector('button[type="submit"]') : null;
 
-const API_URL_PAGOS = 'http://localhost:3000/api/pagos';
-const API_URL_SEQUENCE = 'http://localhost:3000/api/sequence';
+const API_URL_PAGOS = 'http://192.168.0.13:3000/api/pagos';
+const API_URL_SEQUENCE = 'http://192.168.0.13:3000/api/sequence';
 
 if (!formPago || !tablaPagosBody) {
     return;

@@ -6,7 +6,7 @@ const periodosProyeccionInput = document.getElementById('periodos-proyeccion');
 const historialVentasDiv = document.getElementById('historial-ventas');
 const proyeccionesFuturasDiv = document.getElementById('proyecciones-futuras');
 
-const API_URL_VENTAS = 'http://localhost:3000/api/ventas';
+const API_URL_VENTAS = 'http://192.168.0.13:3000/api/ventas';
 
 if (generarProyeccionBtn && historialVentasDiv && proyeccionesFuturasDiv) {
 

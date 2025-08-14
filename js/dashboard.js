@@ -12,11 +12,11 @@ const dashboardVentasRecientesEl = document.getElementById('dashboard-ventas-rec
 const dashboardGastosRecientesEl = document.getElementById('dashboard-gastos-recientes');
 const dashboardEventosProximosEl = document.getElementById('dashboard-eventos-proximos');
 
-const API_URL_VENTAS = 'http://localhost:3000/api/ventas';
-const API_URL_GASTOS = 'http://localhost:3000/api/gastos';
-const API_URL_CLIENTES = 'http://localhost:3000/api/clientes';
-const API_URL_INVENTARIO = 'http://localhost:3000/api/inventario';
-const API_URL_CALENDARIOS = 'http://localhost:3000/api/calendarios';
+const API_URL_VENTAS = 'http://192.168.0.13:3000/api/ventas';
+const API_URL_GASTOS = 'http://192.168.0.13:3000/api/gastos';
+const API_URL_CLIENTES = 'http://192.168.0.13:3000/api/clientes';
+const API_URL_INVENTARIO = 'http://192.168.0.13:3000/api/inventario';
+const API_URL_CALENDARIOS = 'http://192.168.0.13:3000/api/calendarios';
 
 
 if (dashboardVentasMesEl) { // Check if at least one element exists

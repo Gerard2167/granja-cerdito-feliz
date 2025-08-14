@@ -5,7 +5,7 @@
     const tablaClientesBody = document.querySelector('#tabla-clientes tbody');
     const submitButton = formCliente ? formCliente.querySelector('button[type="submit"]') : null;
 
-    const API_URL = 'http://localhost:3000/api/clientes';
+    const API_URL = 'http://192.168.0.13:3000/api/clientes';
 
     if (!formCliente || !tablaClientesBody) {
         return;

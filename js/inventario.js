@@ -5,7 +5,7 @@ const formProducto = document.getElementById('form-producto');
 const tablaProductosBody = document.querySelector('#tabla-productos tbody');
 const submitButton = formProducto ? formProducto.querySelector('button[type="submit"]') : null;
 
-const API_URL_INVENTARIO = 'http://localhost:3000/api/inventario';
+const API_URL_INVENTARIO = 'http://192.168.0.13:3000/api/inventario';
 
 if (!formProducto || !tablaProductosBody) {
     return;

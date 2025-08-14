@@ -5,7 +5,7 @@ const formEvento = document.getElementById('form-evento');
 const tablaEventosBody = document.querySelector('#tabla-eventos tbody');
 const submitButton = formEvento ? formEvento.querySelector('button[type="submit"]') : null;
 
-const API_URL_CALENDARIOS = 'http://localhost:3000/api/calendarios';
+const API_URL_CALENDARIOS = 'http://192.168.0.13:3000/api/calendarios';
 
 if (!formEvento || !tablaEventosBody) {
     return;
