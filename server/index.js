@@ -6,16 +6,19 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+// Cargar variables de entorno desde el archivo .env apropiado
+require('dotenv').config({ path: path.resolve(__dirname, `../.env.${process.env.NODE_ENV || 'development'}`) });
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = 'your_super_secret_key'; // ¡Cambia esto por una clave secreta real y segura!
 
 // --- INICIO DE LA CONFIGURACIÓN DE LA BASE DE DATOS ---
 const dbConfig = {
-    host: 'localhost',
-    user: 'granjacf_gcf_user',
-    password: '4y3VDdU2Bmj9pJV',
-    database: 'granjacf_gcf_data'
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE
 };
 
 const pool = mysql.createPool(dbConfig);
