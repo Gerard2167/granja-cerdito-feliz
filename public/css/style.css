@@ -1,0 +1,554 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+:root {
+    --primary-color: #2E7D32; /* Verde principal más oscuro para el sidebar */
+    --secondary-color: #1B5E20; /* Verde aún más oscuro para hover/active */
+    --highlight-color: #66BB6A; /* Verde más brillante para resaltados */
+    --text-color: #333; /* Texto general oscuro */
+    --bg-color: #f8f9fa; /* Fondo general muy claro */
+    --main-bg-color: #ffffff; /* Fondo de contenido principal */
+    --border-color: #e0e0e0; /* Color de borde sutil */
+    --shadow-color: rgba(0, 0, 0, 0.08); /* Sombra sutil */
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.app-container {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    grid-template-rows: 70px 1fr; /* Header un poco más alto */
+    grid-template-areas:
+        "sidebar header"
+        "sidebar main";
+    height: 100vh;
+    overflow: hidden; /* Evita scrollbars no deseados */
+    box-shadow: 0 0 20px var(--shadow-color); /* Sombra general para la app */
+    border-radius: 8px; /* Bordes redondeados para la app */
+}
+
+.app-header {
+    grid-area: header;
+    background-color: var(--main-bg-color);
+    color: var(--primary-color);
+    display: flex;
+    align-items: center; /* Centrar verticalmente */
+    justify-content: space-between; /* Empujar elementos a los extremos */
+    padding: 0 2rem;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px var(--shadow-color); /* Sombra sutil en el header */
+    z-index: 10; /* Asegura que esté por encima de otros elementos */
+}
+
+.header-left-content {
+    display: flex;
+    align-items: center;
+}
+
+.user-display-name {
+    font-weight: 600;
+    color: var(--secondary-color);
+    margin-left: auto; /* Empuja el elemento a la derecha */
+    padding-left: 1rem; /* Espacio a la izquierda si es necesario */
+}
+
+.app-header h1 {
+    margin: 0;
+    font-size: 1.6rem;
+    margin-left: 15px; /* Espacio entre logo y texto */
+    font-weight: 700;
+    color: var(--secondary-color);
+}
+
+.app-logo {
+    height: 45px; /* Ajusta el tamaño del logo */
+    width: auto;
+}
+
+.sidebar {
+    grid-area: sidebar;
+    background-color: var(--primary-color); /* Usa el verde más oscuro */
+    color: white; /* Texto blanco */
+    padding: 1.5rem 0;
+    border-right: 1px solid var(--secondary-color); /* Borde sutil */
+    box-shadow: 2px 0 5px var(--shadow-color); /* Sombra sutil en el sidebar */
+    overflow-y: auto; /* Para scroll si hay muchos elementos */
+}
+
+.nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    color: white; /* Texto blanco */
+    text-decoration: none;
+    font-weight: 400;
+    transition: background-color 0.3s ease, padding-left 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.nav-link:hover {
+    background-color: var(--secondary-color); /* Verde aún más oscuro al pasar el ratón */
+    padding-left: 1.8rem;
+}
+
+.nav-link.active {
+    background-color: var(--highlight-color); /* Verde más brillante para el activo */
+    font-weight: 700;
+    padding-left: 2rem;
+    position: relative;
+}
+
+.nav-link.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    background-color: var(--main-bg-color); /* Pequeña barra de acento */
+    border-radius: 0 3px 3px 0;
+}
+
+.main-content {
+    grid-area: main;
+    padding: 2.5rem; /* Más padding */
+    overflow-y: auto;
+    background-color: var(--main-bg-color);
+}
+
+.main-content h1 {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--highlight-color);
+    padding-bottom: 0.8rem;
+    margin-top: 0;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.main-content p {
+    font-size: 1rem;
+    color: #555;
+}
+
+/* --- Summary Cards --- */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Ajuste de tamaño */
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.card {
+    background-color: #fdfdfd;
+    padding: 1.8rem;
+    border-radius: 10px; /* Bordes más redondeados */
+    border: 1px solid var(--border-color);
+    text-align: center;
+    box-shadow: 0 4px 12px var(--shadow-color); /* Sombra más pronunciada */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+.card h3 {
+    margin-top: 0;
+    color: var(--secondary-color);
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.card p {
+    font-size: 2.2rem; /* Tamaño de número más grande */
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0.8rem 0;
+}
+
+.card.net-balance p {
+    color: #e74c3c; /* Rojo para balance negativo */
+}
+
+/* --- Recent Transactions --- */
+.recent-transactions {
+    background-color: #fdfdfd;
+    padding: 1.5rem;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    margin-top: 1.5rem;
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px dashed var(--border-color);
+    font-size: 0.95rem;
+}
+
+.transaction-item:last-child {
+    border-bottom: none;
+}
+
+.transaction-item .date { color: #777; font-size: 0.85rem; }
+.transaction-item .description { font-weight: 500; flex-grow: 1; margin: 0 15px; }
+.transaction-item .amount { font-weight: 700; font-size: 1.05rem; }
+.transaction-item .amount.income { color: #27ae60; /* Verde */ }
+.transaction-item .amount.expense { color: #e74c3c; /* Rojo */ }
+
+/* --- Forms and Tables --- */
+.data-form {
+    background-color: #fdfdfd;
+    padding: 2rem;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    margin-top: 1.5rem;
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.6rem;
+    font-weight: 600;
+    color: var(--secondary-color);
+    font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 0.9rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color: var(--highlight-color);
+    box-shadow: 0 0 0 3px rgba(139, 195, 74, 0.2); /* Sombra de enfoque */
+    outline: none;
+}
+
+.btn-submit {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.05rem;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.btn-submit:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+.section-divider {
+    margin: 3rem 0;
+    border: 0;
+    border-top: 1px solid var(--border-color);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.5rem;
+    background-color: #fdfdfd;
+    border-radius: 10px;
+    overflow: hidden; /* Para que los bordes redondeados funcionen con thead */
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.data-table th, .data-table td {
+    border: 1px solid var(--border-color);
+    padding: 1rem;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.data-table th {
+    background-color: var(--secondary-color);
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.data-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.data-table tbody tr:hover {
+    background-color: #eef;
+}
+
+.data-table td button {
+    background-color: var(--highlight-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    margin-right: 5px;
+    transition: background-color 0.2s ease;
+}
+
+.data-table td button:hover {
+    background-color: var(--primary-color);
+}
+
+.data-table td button.btn-eliminar {
+    background-color: #e74c3c;
+}
+
+.data-table td button.btn-eliminar:hover {
+    background-color: #c0392b;
+}
+
+.dashboard-sections {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+/* --- Media Queries for Responsiveness --- */
+@media (max-width: 768px) {
+    .app-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: 70px 1fr; /* Header y luego el contenido principal */
+        grid-template-areas:
+            "header"
+            "main";
+        height: 100vh;
+        position: relative; /* Para el overlay del sidebar */
+    }
+
+    .app-header {
+        padding: 0 1rem; /* Ajustar padding */
+        justify-content: flex-start; /* Alinear elementos a la izquierda */
+    }
+
+    .hamburger-menu {
+        display: flex; /* Mostrar el botón de hamburguesa */
+        flex-direction: column;
+        justify-content: space-around;
+        width: 30px;
+        height: 25px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        margin-right: 15px;
+        z-index: 20; /* Asegurar que esté por encima del logo */
+    }
+
+    .hamburger-menu .bar {
+        width: 100%;
+        height: 3px;
+        background-color: var(--primary-color);
+        border-radius: 5px;
+        transition: all 0.3s ease-in-out;
+    }
+
+    /* Animación de la hamburguesa a X */
+    .hamburger-menu.open .bar:nth-child(1) { transform: translateY(11px) rotate(45deg); }
+    .hamburger-menu.open .bar:nth-child(2) { opacity: 0; }
+    .hamburger-menu.open .bar:nth-child(3) { transform: translateY(-11px) rotate(-45deg); }
+
+    .sidebar {
+        position: fixed; /* Sidebar como overlay */
+        top: 0;
+        left: -240px; /* Oculto por defecto */
+        width: 240px;
+        height: 100%;
+        z-index: 15; /* Por encima del main content */
+        transition: left 0.3s ease-in-out;
+        border-right: none; /* Eliminar borde derecho */
+        box-shadow: 5px 0 15px rgba(0,0,0,0.2); /* Sombra para el overlay */
+    }
+
+    .app-container.sidebar-open .sidebar {
+        left: 0; /* Mostrar sidebar */
+    }
+
+    .app-container.sidebar-open .main-content::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0,0,0,0.5); /* Overlay oscuro */
+        z-index: 10; /* Detrás del sidebar, encima del main content */
+    }
+
+    .nav-list {
+        flex-direction: column; /* Volver a columna */
+        justify-content: flex-start;
+        align-items: flex-start;
+        padding: 1rem 0;
+    }
+
+    .nav-link {
+        width: 100%;
+        padding: 1rem 1.5rem;
+    }
+
+    .nav-link.active::before {
+        width: 5px;
+        height: auto;
+        bottom: 0;
+        top: 0;
+        border-radius: 0 3px 3px 0;
+    }
+
+    .main-content {
+        padding: 1.5rem;
+    }
+
+    .main-content h1 {
+        font-size: 1.8rem;
+    }
+
+    .summary-cards {
+        grid-template-columns: 1fr; /* Una columna en móvil */
+    }
+
+    .data-table {
+        overflow-x: auto; /* Permite scroll horizontal en tablas */
+        -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+    }
+
+    .data-table table {
+        width: 600px; /* Ancho mínimo para la tabla */
+    }
+
+    .dashboard-sections {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Ocultar hamburguesa en desktop */
+@media (min-width: 769px) {
+    .hamburger-menu {
+        display: none;
+    }
+}
+
+/* --- Login Page Styles --- */
+
+.login-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+    font-family: 'Poppins', sans-serif;
+}
+
+.login-wrapper {
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+}
+
+.login-box {
+    background: #ffffff;
+    padding: 3rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+.login-header {
+    margin-bottom: 2rem;
+}
+
+.login-logo {
+    width: 80px;
+    height: auto;
+    margin-bottom: 1rem;
+}
+
+.login-header h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+.login-header p {
+    color: #777;
+    font-size: 1rem;
+}
+
+.login-form .form-group {
+    text-align: left;
+    margin-bottom: 1.5rem;
+}
+
+.login-form .form-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--secondary-color);
+}
+
+.login-form .form-group input {
+    padding: 0.9rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.login-form .form-group input::placeholder {
+    color: #ccc;
+}
+
+.login-form .btn-submit {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.1rem;
+    border-radius: 8px;
+}
+
+.error-message {
+    color: #e74c3c;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    min-height: 20px;
+}
+
+.login-footer p {
+    color: #555;
+    font-size: 0.9rem;
+}

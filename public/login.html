@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Granja Cerdito Feliz</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="login-body">
+    <div class="login-wrapper">
+        <div class="login-box">
+            <div class="login-header">
+                <img src="Logo Granja Cerdito Feliz fondo blanco.png" alt="Logo" class="login-logo">
+                <h2>Bienvenido de Vuelta</h2>
+                <p>Inicia sesión para continuar</p>
+            </div>
+            <form id="login-form" class="login-form">
+                <div class="form-group">
+                    <label for="username">Usuario</label>
+                    <input type="text" id="username" name="username" required placeholder="ej. admin">
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-submit">Ingresar</button>
+            </form>
+            <p id="error-message" class="error-message"></p>
+        </div>
+        <div class="login-footer">
+            <p>&copy; 2025 Granja Cerdito Feliz. Todos los derechos reservados.</p>
+        </div>
+    </div>
+    <script src="/js/login.js?v=1"></script>
+</body>
+</html>
