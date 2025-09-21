@@ -25,99 +25,38 @@ const pool = mysql.createPool(dbConfig);
 
 // Función para inicializar la base de datos y crear las tablas
 async function initializeDatabase() {
-    console.log('Conectando a la base de datos...');
     try {
+        // Paso 1: Conectarse a MySQL sin especificar la base de datos para crearla.
+        console.log('Verificando la existencia de la base de datos...');
+        const tempConnection = mysql.createConnection({
+            host: process.env.DB_HOST,
+            user: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+        });
+
+        await tempConnection.promise().query(`CREATE DATABASE IF NOT EXISTS 
+${process.env.DB_DATABASE}
+`);
+        await tempConnection.promise().end();
+        console.log(`Base de datos '${process.env.DB_DATABASE}' asegurada.`);
+
+        // Ahora que la BD existe, el pool puede conectarse a ella sin problemas.
+        console.log('Conectando a la base de datos...');
         const connection = await pool.promise().getConnection();
         console.log('Conexión a la base de datos MySQL establecida.');
 
+
         const tables = {
-            roles: `CREATE TABLE IF NOT EXISTS roles (
-                id INTEGER PRIMARY KEY AUTO_INCREMENT,
-                nombre VARCHAR(255) NOT NULL UNIQUE
-            )`,
-            users: `CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTO_INCREMENT,
-                username VARCHAR(255) NOT NULL UNIQUE,
-                nombre VARCHAR(255),
-                password VARCHAR(255) NOT NULL,
-                role_id INTEGER,
-                FOREIGN KEY (role_id) REFERENCES roles(id)
-            )`,
-            clientes: `CREATE TABLE IF NOT EXISTS clientes (
-                id INTEGER PRIMARY KEY AUTO_INCREMENT,
-                nombre TEXT NOT NULL,
-                telefono TEXT,
-                email TEXT,
-                direccion TEXT
-            )`,
-            ventas: `CREATE TABLE IF NOT EXISTS ventas (
-                id INTEGER PRIMARY KEY AUTO_INCREMENT,
-                cliente TEXT NOT NULL,
-                producto TEXT NOT NULL,
-                cantidad REAL NOT NULL,
-                precioUnitario REAL NOT NULL,
-                total REAL NOT NULL,
-                fecha TEXT NOT NULL,
-                estadoPago TEXT NOT NULL
-            )`,
-            inventario: `CREATE TABLE IF NOT EXISTS inventario (
-                id INTEGER PRIMARY KEY AUTO_INCREMENT,
-                nombre TEXT NOT NULL,
-                descripcion TEXT,
-                stock REAL NOT NULL,
-                unidad TEXT,
-                precioCompra REAL,
-                precioVenta REAL NOT NULL,
-                proveedor TEXT
-            )`,
-            gastos: `CREATE TABLE IF NOT EXISTS gastos (
-                id INTEGER PRIMARY KEY AUTO_INCREMENT,
-                fecha TEXT NOT NULL,
-                categoria TEXT NOT NULL,
-                descripcion TEXT,
-                monto REAL NOT NULL,
-                metodoPago TEXT,
-                numeroFactura TEXT
-            )`,
-            proveedores: `CREATE TABLE IF NOT EXISTS proveedores (
-                id INTEGER PRIMARY KEY AUTO_INCREMENT,
-                nombre TEXT NOT NULL,
-                personaContacto TEXT,
-                telefono TEXT,
-                email TEXT,
-                direccion TEXT,
-                productosServicios TEXT,
-                terminosPago TEXT
-            )`,
-            pagos: `CREATE TABLE IF NOT EXISTS pagos (
-                id INTEGER PRIMARY KEY AUTO_INCREMENT,
-                fecha TEXT NOT NULL,
-                tipo TEXT NOT NULL,
-                concepto TEXT NOT NULL,
-                monto REAL NOT NULL,
-                metodo TEXT NOT NULL,
-                entidadRelacionada TEXT,
-                referencia TEXT
-            )`,
-            colaboradores: `CREATE TABLE IF NOT EXISTS colaboradores (
-                id INTEGER PRIMARY KEY AUTO_INCREMENT,
-                nombre TEXT NOT NULL,
-                cargo TEXT,
-                telefono TEXT,
-                email TEXT,
-                direccion TEXT,
-                fechaInicio TEXT,
-                salario REAL,
-                notas TEXT
-            )`,
-            calendarios: `CREATE TABLE IF NOT EXISTS calendarios (
-                id INTEGER PRIMARY KEY AUTO_INCREMENT,
-                fecha TEXT NOT NULL,
-                tipo TEXT NOT NULL,
-                descripcion TEXT NOT NULL,
-                responsable TEXT,
-                estado TEXT NOT NULL
-            )`,
+            roles: `CREATE TABLE IF NOT EXISTS roles (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               nombre VARCHAR(255) NOT NULL UNIQUE            )`,
+            users: `CREATE TABLE IF NOT EXISTS users (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               username VARCHAR(255) NOT NULL UNIQUE,               nombre VARCHAR(255),               password VARCHAR(255) NOT NULL,               role_id INTEGER,               FOREIGN KEY (role_id) REFERENCES roles(id)            )`,
+            clientes: `CREATE TABLE IF NOT EXISTS clientes (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               nombre TEXT NOT NULL,               telefono TEXT,               email TEXT,               direccion TEXT            )`,
+            ventas: `CREATE TABLE IF NOT EXISTS ventas (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               cliente TEXT NOT NULL,               producto TEXT NOT NULL,               cantidad REAL NOT NULL,               precioUnitario REAL NOT NULL,               total REAL NOT NULL,               fecha TEXT NOT NULL,               estadoPago TEXT NOT NULL            )`,
+            inventario: `CREATE TABLE IF NOT EXISTS inventario (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               nombre TEXT NOT NULL,               descripcion TEXT,               stock REAL NOT NULL,               unidad TEXT,               precioCompra REAL,               precioVenta REAL NOT NULL,               proveedor TEXT            )`,
+            gastos: `CREATE TABLE IF NOT EXISTS gastos (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               fecha TEXT NOT NULL,               categoria TEXT NOT NULL,               descripcion TEXT,               monto REAL NOT NULL,               metodoPago TEXT,               numeroFactura TEXT            )`,
+            proveedores: `CREATE TABLE IF NOT EXISTS proveedores (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               nombre TEXT NOT NULL,               personaContacto TEXT,               telefono TEXT,               email TEXT,               direccion TEXT,               productosServicios TEXT,               terminosPago TEXT            )`,
+            pagos: `CREATE TABLE IF NOT EXISTS pagos (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               fecha TEXT NOT NULL,               tipo TEXT NOT NULL,               concepto TEXT NOT NULL,               monto REAL NOT NULL,               metodo TEXT NOT NULL,               entidadRelacionada TEXT,               referencia TEXT            )`,
+            colaboradores: `CREATE TABLE IF NOT EXISTS colaboradores (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               nombre TEXT NOT NULL,               cargo TEXT,               telefono TEXT,               email TEXT,               direccion TEXT,               fechaInicio TEXT,               salario REAL,               notas TEXT            )`,
+            calendarios: `CREATE TABLE IF NOT EXISTS calendarios (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               fecha TEXT NOT NULL,               tipo TEXT NOT NULL,               descripcion TEXT NOT NULL,               responsable TEXT,               estado TEXT NOT NULL            )`,
             settings: "CREATE TABLE IF NOT EXISTS settings (`key` VARCHAR(255) PRIMARY KEY, value TEXT)"
         };
 
@@ -135,6 +74,54 @@ async function initializeDatabase() {
                 console.log('Columna \'nombre\' ya existe en la tabla users.');
             } else {
                 console.error('Error al añadir columna \'nombre\' a la tabla users:', alterError);
+            }
+        }
+
+        // Add 'creado_por_id' column to clientes table if it doesn't exist
+        try {
+            await connection.query("ALTER TABLE clientes ADD COLUMN creado_por_id INTEGER, ADD FOREIGN KEY (creado_por_id) REFERENCES users(id)");
+            console.log('Columna \'creado_por_id\' añadida a la tabla clientes.');
+        } catch (alterError) {
+            if (alterError.code === 'ER_DUP_FIELD_NAME' || alterError.code === 'ER_FK_DUP_NAME') {
+                console.log('Columna o FK \'creado_por_id\' ya existe en la tabla clientes.');
+            } else {
+                console.error('Error al añadir columna \'creado_por_id\' a la tabla clientes:', alterError);
+            }
+        }
+
+        // Add 'creado_por_id' column to ventas table if it doesn't exist
+        try {
+            await connection.query("ALTER TABLE ventas ADD COLUMN creado_por_id INTEGER, ADD FOREIGN KEY (creado_por_id) REFERENCES users(id)");
+            console.log('Columna \'creado_por_id\' añadida a la tabla ventas.');
+        } catch (alterError) {
+            if (alterError.code === 'ER_DUP_FIELD_NAME' || alterError.code === 'ER_FK_DUP_NAME') {
+                console.log('Columna o FK \'creado_por_id\' ya existe en la tabla ventas.');
+            } else {
+                console.error('Error al añadir columna \'creado_por_id\' a la tabla ventas:', alterError);
+            }
+        }
+
+        // Add 'estado' column to gastos table if it doesn't exist
+        try {
+            await connection.query("ALTER TABLE gastos ADD COLUMN estado VARCHAR(255) NOT NULL DEFAULT 'Pendiente'");
+            console.log('Columna \'estado\' añadida a la tabla gastos.');
+        } catch (alterError) {
+            if (alterError.code === 'ER_DUP_FIELD_NAME') {
+                console.log('Columna \'estado\' ya existe en la tabla gastos.');
+            } else {
+                console.error('Error al añadir columna \'estado\' a la tabla gastos:', alterError);
+            }
+        }
+
+        // Add 'proveedor' column to gastos table if it doesn't exist
+        try {
+            await connection.query("ALTER TABLE gastos ADD COLUMN proveedor TEXT");
+            console.log('Columna \'proveedor\' añadida a la tabla gastos.');
+        } catch (alterError) {
+            if (alterError.code === 'ER_DUP_FIELD_NAME') {
+                console.log('Columna \'proveedor\' ya existe en la tabla gastos.');
+            } else {
+                console.error('Error al añadir columna \'proveedor\' a la tabla gastos:', alterError);
             }
         }
 
@@ -356,7 +343,7 @@ app.get('/', (req, res) => {
 // Rutas API para Clientes
 app.get('/clientes', authenticateJWT(['Administrador General', 'Vendedor']), (req, res) => {
     pool.query("SELECT * FROM clientes", (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
+        if (err) { res.status(400).json({ error: err.message }); return; }
         res.json(results);
     });
 });
@@ -364,17 +351,18 @@ app.post('/clientes', authenticateJWT(['Administrador General', 'Vendedor']), (r
     console.log('--- INTENTO DE GUARDAR CLIENTE RECIBIDO ---');
     console.log('Body de la petición:', req.body);
     const { nombre, telefono, email, direccion } = req.body;
+    const creado_por_id = req.user.id; // ID del usuario autenticado
     if (!nombre) {
         console.log('Error: El nombre es requerido.');
-        res.status(400).json({ "error": "El nombre es requerido" });
+        res.status(400).json({ error: "El nombre es requerido" });
         return;
     }
-    pool.query(`INSERT INTO clientes (nombre, telefono, email, direccion) VALUES (?, ?, ?, ?)`,
-        [nombre, telefono, email, direccion],
+    pool.query(`INSERT INTO clientes (nombre, telefono, email, direccion, creado_por_id) VALUES (?, ?, ?, ?, ?)`, 
+        [nombre, telefono, email, direccion, creado_por_id],
         (err, results) => {
-            if (err) {
+            if (err) { 
                 console.error('Error de base de datos al guardar cliente:', err);
-                res.status(400).json({ "error": err.message });
+                res.status(400).json({ error: err.message });
                 return;
             }
             console.log('Cliente guardado con éxito. Resultado:', results);
@@ -382,68 +370,156 @@ app.post('/clientes', authenticateJWT(['Administrador General', 'Vendedor']), (r
         }
     );
 });
-app.put('/clientes/:id', authenticateJWT(['Administrador General']), (req, res) => {
+app.put('/clientes/:id', authenticateJWT(['Administrador General', 'Vendedor']), async (req, res) => {
     const { nombre, telefono, email, direccion } = req.body;
     const id = parseInt(req.params.id);
-    if (!nombre) { res.status(400).json({ "error": "El nombre es requerido" }); return; }
-    pool.query(`UPDATE clientes SET nombre = ?, telefono = ?, email = ?, direccion = ? WHERE id = ?`,
-        [nombre, telefono, email, direccion, id],
-        (err, results) => {
-            if (err) { res.status(400).json({ "error": err.message }); return; }
-            if (results.affectedRows === 0) { res.status(404).json({ "error": "Cliente no encontrado" }); }
-            else { res.json({ id, nombre, telefono, email, direccion }); }
+    const user = req.user;
+
+    if (!nombre) { 
+        return res.status(400).json({ error: "El nombre es requerido" });
+    }
+
+    try {
+        if (user.role !== 'Administrador General') {
+            const [rows] = await pool.promise().query('SELECT creado_por_id FROM clientes WHERE id = ?', [id]);
+            if (rows.length === 0) {
+                return res.status(404).json({ error: "Cliente no encontrado" });
+            }
+            if (rows[0].creado_por_id !== user.id) {
+                return res.status(403).json({ error: "No tiene permiso para modificar este cliente" });
+            }
         }
-    );
+
+        const [results] = await pool.promise().query(
+            `UPDATE clientes SET nombre = ?, telefono = ?, email = ?, direccion = ? WHERE id = ?`,
+            [nombre, telefono, email, direccion, id]
+        );
+
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ error: "Cliente no encontrado" });
+        } else {
+            res.json({ id, nombre, telefono, email, direccion });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
-app.delete('/clientes/:id', authenticateJWT(['Administrador General']), (req, res) => {
+
+app.delete('/clientes/:id', authenticateJWT(['Administrador General', 'Vendedor']), async (req, res) => {
     const id = parseInt(req.params.id);
-    pool.query(`DELETE FROM clientes WHERE id = ?`, [id], (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
-        if (results.affectedRows === 0) { res.status(404).json({ "error": "Cliente no encontrado" }); }
-        else { res.status(204).send(); }
-    });
+    const user = req.user;
+
+    try {
+        if (user.role !== 'Administrador General') {
+            const [rows] = await pool.promise().query('SELECT creado_por_id FROM clientes WHERE id = ?', [id]);
+            if (rows.length === 0) {
+                return res.status(404).json({ error: "Cliente no encontrado" });
+            }
+            if (rows[0].creado_por_id !== user.id) {
+                return res.status(403).json({ error: "No tiene permiso para eliminar este cliente" });
+            }
+        }
+
+        const [results] = await pool.promise().query(`DELETE FROM clientes WHERE id = ?`, [id]);
+
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ error: "Cliente no encontrado" });
+        } else {
+            res.status(204).send();
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Rutas API para Ventas
 app.get('/ventas', authenticateJWT(['Administrador General', 'Contador / Finanzas', 'Vendedor']), (req, res) => {
     pool.query("SELECT * FROM ventas", (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
+        if (err) { res.status(400).json({ error: err.message }); return; }
         res.json(results);
     });
 });
+
+app.get('/ventas-pendientes', authenticateJWT(['Administrador General', 'Contador / Finanzas']), async (req, res) => {
+    try {
+        const [ventas] = await pool.promise().query("SELECT id, cliente, total, producto FROM ventas WHERE estadoPago = 'Pendiente'");
+        res.json(ventas);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.post('/ventas', authenticateJWT(['Administrador General', 'Vendedor']), (req, res) => {
     const { cliente, producto, cantidad, precioUnitario, total, fecha, estadoPago } = req.body;
-    const query = `INSERT INTO ventas (cliente, producto, cantidad, precioUnitario, total, fecha, estadoPago) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-    const params = [cliente, producto, cantidad, precioUnitario, total, fecha, estadoPago];
+    const creado_por_id = req.user.id; // ID del usuario autenticado
+    const query = `INSERT INTO ventas (cliente, producto, cantidad, precioUnitario, total, fecha, estadoPago, creado_por_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    const params = [cliente, producto, cantidad, precioUnitario, total, fecha, estadoPago, creado_por_id];
     pool.query(query, params, (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
+        if (err) { res.status(400).json({ error: err.message }); return; }
         res.status(201).json({ id: results.insertId, ...req.body });
     });
 });
-app.put('/ventas/:id', authenticateJWT(['Administrador General']), (req, res) => {
+app.put('/ventas/:id', authenticateJWT(['Administrador General', 'Vendedor']), async (req, res) => {
     const { cliente, producto, cantidad, precioUnitario, total, fecha, estadoPago } = req.body;
     const id = parseInt(req.params.id);
-    const query = `UPDATE ventas SET cliente = ?, producto = ?, cantidad = ?, precioUnitario = ?, total = ?, fecha = ?, estadoPago = ? WHERE id = ?`;
-    const params = [cliente, producto, cantidad, precioUnitario, total, fecha, estadoPago, id];
-    pool.query(query, params, (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
-        if (results.affectedRows === 0) { res.status(404).json({ "error": "Venta no encontrada" }); }
-        else { res.json({ id, ...req.body }); }
-    });
+    const user = req.user;
+
+    try {
+        if (user.role !== 'Administrador General') {
+            const [rows] = await pool.promise().query('SELECT creado_por_id FROM ventas WHERE id = ?', [id]);
+            if (rows.length === 0) {
+                return res.status(404).json({ error: "Venta no encontrada" });
+            }
+            if (rows[0].creado_por_id !== user.id) {
+                return res.status(403).json({ error: "No tiene permiso para modificar esta venta" });
+            }
+        }
+
+        const query = `UPDATE ventas SET cliente = ?, producto = ?, cantidad = ?, precioUnitario = ?, total = ?, fecha = ?, estadoPago = ? WHERE id = ?`;
+        const params = [cliente, producto, cantidad, precioUnitario, total, fecha, estadoPago, id];
+        const [results] = await pool.promise().query(query, params);
+
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ error: "Venta no encontrada" });
+        } else {
+            res.json({ id, ...req.body });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
-app.delete('/ventas/:id', authenticateJWT(['Administrador General']), (req, res) => {
+
+app.delete('/ventas/:id', authenticateJWT(['Administrador General', 'Vendedor']), async (req, res) => {
     const id = parseInt(req.params.id);
-    pool.query(`DELETE FROM ventas WHERE id = ?`, [id], (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
-        if (results.affectedRows === 0) { res.status(404).json({ "error": "Venta no encontrada" }); }
-        else { res.status(204).send(); }
-    });
+    const user = req.user;
+
+    try {
+        if (user.role !== 'Administrador General') {
+            const [rows] = await pool.promise().query('SELECT creado_por_id FROM ventas WHERE id = ?', [id]);
+            if (rows.length === 0) {
+                return res.status(404).json({ error: "Venta no encontrada" });
+            }
+            if (rows[0].creado_por_id !== user.id) {
+                return res.status(403).json({ error: "No tiene permiso para eliminar esta venta" });
+            }
+        }
+
+        const [results] = await pool.promise().query(`DELETE FROM ventas WHERE id = ?`, [id]);
+
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ error: "Venta no encontrada" });
+        } else {
+            res.status(204).send();
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Rutas API para Inventario
 app.get('/inventario', authenticateJWT(['Administrador General', 'Vendedor', 'Encargado de Inventario', 'Supervisor de Producción']), (req, res) => {
     pool.query("SELECT * FROM inventario", (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
+        if (err) { res.status(400).json({ error: err.message }); return; }
         res.json(results);
     });
 });
@@ -452,7 +528,7 @@ app.post('/inventario', authenticateJWT(['Administrador General', 'Encargado de 
     const query = `INSERT INTO inventario (nombre, descripcion, stock, unidad, precioCompra, precioVenta, proveedor) VALUES (?, ?, ?, ?, ?, ?, ?)`;
     const params = [nombre, descripcion, stock, unidad, precioCompra, precioVenta, proveedor];
     pool.query(query, params, (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
+        if (err) { res.status(400).json({ error: err.message }); return; }
         res.status(201).json({ id: results.insertId, ...req.body });
     });
 });
@@ -462,16 +538,16 @@ app.put('/inventario/:id', authenticateJWT(['Administrador General', 'Encargado 
     const query = `UPDATE inventario SET nombre = ?, descripcion = ?, stock = ?, unidad = ?, precioCompra = ?, precioVenta = ?, proveedor = ? WHERE id = ?`;
     const params = [nombre, descripcion, stock, unidad, precioCompra, precioVenta, proveedor, id];
     pool.query(query, params, (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
-        if (results.affectedRows === 0) { res.status(404).json({ "error": "Producto no encontrado" }); }
+        if (err) { res.status(400).json({ error: err.message }); return; }
+        if (results.affectedRows === 0) { res.status(404).json({ error: "Producto no encontrado" }); }
         else { res.json({ id, ...req.body }); }
     });
 });
 app.delete('/inventario/:id', authenticateJWT(['Administrador General', 'Encargado de Inventario']), (req, res) => {
     const id = parseInt(req.params.id);
     pool.query(`DELETE FROM inventario WHERE id = ?`, [id], (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
-        if (results.affectedRows === 0) { res.status(404).json({ "error": "Producto no encontrado" }); }
+        if (err) { res.status(400).json({ error: err.message }); return; }
+        if (results.affectedRows === 0) { res.status(404).json({ error: "Producto no encontrado" }); }
         else { res.status(204).send(); }
     });
 });
@@ -479,35 +555,45 @@ app.delete('/inventario/:id', authenticateJWT(['Administrador General', 'Encarga
 // Rutas API para Gastos
 app.get('/gastos', authenticateJWT(['Administrador General', 'Contador / Finanzas', 'Vendedor']), (req, res) => {
     pool.query("SELECT * FROM gastos", (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
+        if (err) { res.status(400).json({ error: err.message }); return; }
         res.json(results);
     });
 });
+
+app.get('/gastos-pendientes', authenticateJWT(['Administrador General', 'Contador / Finanzas']), async (req, res) => {
+    try {
+        const [gastos] = await pool.promise().query("SELECT id, descripcion, monto, proveedor FROM gastos WHERE estado = 'Pendiente'");
+        res.json(gastos);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.post('/gastos', authenticateJWT(['Administrador General', 'Contador / Finanzas']), (req, res) => {
-    const { fecha, categoria, descripcion, monto, metodoPago, numeroFactura } = req.body;
-    const query = `INSERT INTO gastos (fecha, categoria, descripcion, monto, metodoPago, numeroFactura) VALUES (?, ?, ?, ?, ?, ?)`;
-    const params = [fecha, categoria, descripcion, monto, metodoPago, numeroFactura];
+    const { fecha, categoria, descripcion, monto, metodoPago, numeroFactura, estado, proveedor } = req.body;
+    const query = `INSERT INTO gastos (fecha, categoria, descripcion, monto, metodoPago, numeroFactura, estado, proveedor) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    const params = [fecha, categoria, descripcion, monto, metodoPago, numeroFactura, estado || 'Pendiente', proveedor];
     pool.query(query, params, (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
-        res.status(201).json({ id: results.insertId, ...req.body });
+        if (err) { res.status(400).json({ error: err.message }); return; }
+        res.status(201).json({ id: results.insertId, ...req.body, estado: estado || 'Pendiente' });
     });
 });
 app.put('/gastos/:id', authenticateJWT(['Administrador General', 'Contador / Finanzas']), (req, res) => {
-    const { fecha, categoria, descripcion, monto, metodoPago, numeroFactura } = req.body;
+    const { fecha, categoria, descripcion, monto, metodoPago, numeroFactura, estado, proveedor } = req.body;
     const id = parseInt(req.params.id);
-    const query = `UPDATE gastos SET fecha = ?, categoria = ?, descripcion = ?, monto = ?, metodoPago = ?, numeroFactura = ? WHERE id = ?`;
-    const params = [fecha, categoria, descripcion, monto, metodoPago, numeroFactura, id];
+    const query = `UPDATE gastos SET fecha = ?, categoria = ?, descripcion = ?, monto = ?, metodoPago = ?, numeroFactura = ?, estado = ?, proveedor = ? WHERE id = ?`;
+    const params = [fecha, categoria, descripcion, monto, metodoPago, numeroFactura, estado, proveedor, id];
     pool.query(query, params, (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
-        if (results.affectedRows === 0) { res.status(404).json({ "error": "Gasto no encontrado" }); }
+        if (err) { res.status(400).json({ error: err.message }); return; }
+        if (results.affectedRows === 0) { res.status(404).json({ error: "Gasto no encontrado" }); }
         else { res.json({ id, ...req.body }); }
     });
 });
 app.delete('/gastos/:id', authenticateJWT(['Administrador General']), (req, res) => {
     const id = parseInt(req.params.id);
     pool.query(`DELETE FROM gastos WHERE id = ?`, [id], (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
-        if (results.affectedRows === 0) { res.status(404).json({ "error": "Gasto no encontrado" }); }
+        if (err) { res.status(400).json({ error: err.message }); return; }
+        if (results.affectedRows === 0) { res.status(404).json({ error: "Gasto no encontrado" }); }
         else { res.status(204).send(); }
     });
 });
@@ -515,7 +601,7 @@ app.delete('/gastos/:id', authenticateJWT(['Administrador General']), (req, res)
 // Rutas API para Proveedores
 app.get('/proveedores', authenticateJWT(['Administrador General', 'Encargado de Inventario', 'Supervisor de Producción']), (req, res) => {
     pool.query("SELECT * FROM proveedores", (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
+        if (err) { res.status(400).json({ error: err.message }); return; }
         res.json(results);
     });
 });
@@ -524,7 +610,7 @@ app.post('/proveedores', authenticateJWT(['Administrador General', 'Encargado de
     const query = `INSERT INTO proveedores (nombre, personaContacto, telefono, email, direccion, productosServicios, terminosPago) VALUES (?, ?, ?, ?, ?, ?, ?)`;
     const params = [nombre, personaContacto, telefono, email, direccion, productosServicios, terminosPago];
     pool.query(query, params, (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
+        if (err) { res.status(400).json({ error: err.message }); return; }
         res.status(201).json({ id: results.insertId, ...req.body });
     });
 });
@@ -534,16 +620,16 @@ app.put('/proveedores/:id', authenticateJWT(['Administrador General', 'Superviso
     const query = `UPDATE proveedores SET nombre = ?, personaContacto = ?, telefono = ?, email = ?, direccion = ?, productosServicios = ?, terminosPago = ? WHERE id = ?`;
     const params = [nombre, personaContacto, telefono, email, direccion, productosServicios, terminosPago, id];
     pool.query(query, params, (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
-        if (results.affectedRows === 0) { res.status(404).json({ "error": "Proveedor no encontrado" }); }
+        if (err) { res.status(400).json({ error: err.message }); return; }
+        if (results.affectedRows === 0) { res.status(404).json({ error: "Proveedor no encontrado" }); }
         else { res.json({ id, ...req.body }); }
     });
 });
 app.delete('/proveedores/:id', authenticateJWT(['Administrador General']), (req, res) => {
     const id = parseInt(req.params.id);
     pool.query(`DELETE FROM proveedores WHERE id = ?`, [id], (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
-        if (results.affectedRows === 0) { res.status(404).json({ "error": "Proveedor no encontrado" }); }
+        if (err) { res.status(400).json({ error: err.message }); return; }
+        if (results.affectedRows === 0) { res.status(404).json({ error: "Proveedor no encontrado" }); }
         else { res.status(204).send(); }
     });
 });
@@ -551,35 +637,66 @@ app.delete('/proveedores/:id', authenticateJWT(['Administrador General']), (req,
 // Rutas API para Pagos
 app.get('/pagos', authenticateJWT(['Administrador General', 'Contador / Finanzas']), (req, res) => {
     pool.query("SELECT * FROM pagos", (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
+        if (err) { res.status(400).json({ error: err.message }); return; }
         res.json(results);
     });
 });
-app.post('/pagos', authenticateJWT(['Administrador General', 'Contador / Finanzas']), (req, res) => {
-    const { fecha, tipo, concepto, monto, metodo, entidadRelacionada, referencia } = req.body;
-    const query = `INSERT INTO pagos (fecha, tipo, concepto, monto, metodo, entidadRelacionada, referencia) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-    const params = [fecha, tipo, concepto, monto, metodo, entidadRelacionada, referencia];
-    pool.query(query, params, (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
-        res.status(201).json({ id: results.insertId, ...req.body });
-    });
+
+app.post('/pagos', authenticateJWT(['Administrador General', 'Contador / Finanzas']), async (req, res) => {
+    const { fecha, tipo, concepto, monto, metodo, entidadRelacionada, venta_id, gasto_id } = req.body;
+    const connection = await pool.promise().getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        // 1. Generar referencia secuencial
+        const refKey = tipo === 'Ingreso' ? 'ref_ingreso' : 'ref_egreso';
+        const refPrefix = tipo === 'Ingreso' ? 'ING-' : 'EGR-';
+
+        await connection.query("INSERT INTO settings (`key`, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value + 1", [refKey]);
+        const [refRows] = await connection.query('SELECT value FROM settings WHERE `key` = ?', [refKey]);
+        const newRefValue = refRows[0].value;
+        const referencia = refPrefix + String(newRefValue).padStart(4, '0');
+
+        // 2. Insertar el pago
+        const pagoQuery = `INSERT INTO pagos (fecha, tipo, concepto, monto, metodo, entidadRelacionada, referencia) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+        const pagoParams = [fecha, tipo, concepto, monto, metodo, entidadRelacionada, referencia];
+        const [pagoResult] = await connection.query(pagoQuery, pagoParams);
+
+        // 3. Actualizar estado de la venta o gasto asociado
+        if (tipo === 'Ingreso' && venta_id) {
+            await connection.query("UPDATE ventas SET estadoPago = 'Pagado' WHERE id = ?", [venta_id]);
+        } else if (tipo === 'Egreso' && gasto_id) {
+            await connection.query("UPDATE gastos SET estado = 'Pagado' WHERE id = ?", [gasto_id]);
+        }
+
+        await connection.commit();
+        res.status(201).json({ id: pagoResult.insertId, ...req.body, referencia });
+
+    } catch (err) {
+        await connection.rollback();
+        res.status(500).json({ error: err.message });
+    } finally {
+        connection.release();
+    }
 });
+
 app.put('/pagos/:id', authenticateJWT(['Administrador General', 'Contador / Finanzas']), (req, res) => {
     const { fecha, tipo, concepto, monto, metodo, entidadRelacionada, referencia } = req.body;
     const id = parseInt(req.params.id);
     const query = `UPDATE pagos SET fecha = ?, tipo = ?, concepto = ?, monto = ?, metodo = ?, entidadRelacionada = ?, referencia = ? WHERE id = ?`;
     const params = [fecha, tipo, concepto, monto, metodo, entidadRelacionada, referencia, id];
     pool.query(query, params, (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
-        if (results.affectedRows === 0) { res.status(404).json({ "error": "Pago no encontrado" }); }
+        if (err) { res.status(400).json({ error: err.message }); return; }
+        if (results.affectedRows === 0) { res.status(404).json({ error: "Pago no encontrado" }); }
         else { res.json({ id, ...req.body }); }
     });
 });
 app.delete('/pagos/:id', authenticateJWT(['Administrador General']), (req, res) => {
     const id = parseInt(req.params.id);
     pool.query(`DELETE FROM pagos WHERE id = ?`, [id], (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
-        if (results.affectedRows === 0) { res.status(404).json({ "error": "Pago no encontrado" }); }
+        if (err) { res.status(400).json({ error: err.message }); return; }
+        if (results.affectedRows === 0) { res.status(404).json({ error: "Pago no encontrado" }); }
         else { res.status(204).send(); }
     });
 });
@@ -587,7 +704,7 @@ app.delete('/pagos/:id', authenticateJWT(['Administrador General']), (req, res) 
 // Rutas API para Colaboradores
 app.get('/colaboradores', authenticateJWT(['Administrador General', 'Supervisor de Producción']), (req, res) => {
     pool.query("SELECT * FROM colaboradores", (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
+        if (err) { res.status(400).json({ error: err.message }); return; }
         res.json(results);
     });
 });
@@ -596,7 +713,7 @@ app.post('/colaboradores', authenticateJWT(['Administrador General']), (req, res
     const query = `INSERT INTO colaboradores (nombre, cargo, telefono, email, direccion, fechaInicio, salario, notas) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
     const params = [nombre, cargo, telefono, email, direccion, fechaInicio, salario, notas];
     pool.query(query, params, (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
+        if (err) { res.status(400).json({ error: err.message }); return; }
         res.status(201).json({ id: results.insertId, ...req.body });
     });
 });
@@ -606,16 +723,16 @@ app.put('/colaboradores/:id', authenticateJWT(['Administrador General']), (req, 
     const query = `UPDATE colaboradores SET nombre = ?, cargo = ?, telefono = ?, email = ?, direccion = ?, fechaInicio = ?, salario = ?, notas = ? WHERE id = ?`;
     const params = [nombre, cargo, telefono, email, direccion, fechaInicio, salario, notas, id];
     pool.query(query, params, (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
-        if (results.affectedRows === 0) { res.status(404).json({ "error": "Colaborador no encontrado" }); }
+        if (err) { res.status(400).json({ error: err.message }); return; }
+        if (results.affectedRows === 0) { res.status(404).json({ error: "Colaborador no encontrado" }); }
         else { res.json({ id, ...req.body }); }
     });
 });
 app.delete('/colaboradores/:id', authenticateJWT(['Administrador General']), (req, res) => {
     const id = parseInt(req.params.id);
     pool.query(`DELETE FROM colaboradores WHERE id = ?`, [id], (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
-        if (results.affectedRows === 0) { res.status(404).json({ "error": "Colaborador no encontrado" }); }
+        if (err) { res.status(400).json({ error: err.message }); return; }
+        if (results.affectedRows === 0) { res.status(404).json({ error: "Colaborador no encontrado" }); }
         else { res.status(204).send(); }
     });
 });
@@ -623,7 +740,7 @@ app.delete('/colaboradores/:id', authenticateJWT(['Administrador General']), (re
 // Rutas API para Calendarios
 app.get('/calendarios', authenticateJWT(['Administrador General', 'Colaborador / Empleado', 'Supervisor de Producción']), (req, res) => {
     pool.query("SELECT * FROM calendarios", (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
+        if (err) { res.status(400).json({ error: err.message }); return; }
         res.json(results);
     });
 });
@@ -632,7 +749,7 @@ app.post('/calendarios', authenticateJWT(['Administrador General', 'Supervisor d
     const query = `INSERT INTO calendarios (fecha, tipo, descripcion, responsable, estado) VALUES (?, ?, ?, ?, ?)`;
     const params = [fecha, tipo, descripcion, responsable, estado];
     pool.query(query, params, (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
+        if (err) { res.status(400).json({ error: err.message }); return; }
         res.status(201).json({ id: results.insertId, ...req.body });
     });
 });
@@ -642,16 +759,16 @@ app.put('/calendarios/:id', authenticateJWT(['Administrador General', 'Superviso
     const query = `UPDATE calendarios SET fecha = ?, tipo = ?, descripcion = ?, responsable = ?, estado = ? WHERE id = ?`;
     const params = [fecha, tipo, descripcion, responsable, estado, id];
     pool.query(query, params, (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
-        if (results.affectedRows === 0) { res.status(404).json({ "error": "Evento de calendario no encontrado" }); }
+        if (err) { res.status(400).json({ error: err.message }); return; }
+        if (results.affectedRows === 0) { res.status(404).json({ error: "Evento de calendario no encontrado" }); }
         else { res.json({ id, ...req.body }); }
     });
 });
 app.delete('/calendarios/:id', authenticateJWT(['Administrador General']), (req, res) => {
     const id = parseInt(req.params.id);
     pool.query(`DELETE FROM calendarios WHERE id = ?`, [id], (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
-        if (results.affectedRows === 0) { res.status(404).json({ "error": "Evento de calendario no encontrado" }); }
+        if (err) { res.status(400).json({ error: err.message }); return; }
+        if (results.affectedRows === 0) { res.status(404).json({ error: "Evento de calendario no encontrado" }); }
         else { res.status(204).send(); }
     });
 });
@@ -660,7 +777,7 @@ app.delete('/calendarios/:id', authenticateJWT(['Administrador General']), (req,
 app.get('/sequence/:key', authenticateJWT(['Administrador General', 'Vendedor']), (req, res) => {
     const key = req.params.key;
     pool.query('SELECT value FROM settings WHERE `key` = ?', [key], (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
+        if (err) { res.status(400).json({ error: err.message }); return; }
         res.json({ value: results.length > 0 ? parseInt(results[0].value, 10) : 0 });
     });
 });
@@ -669,23 +786,29 @@ app.post('/sequence/:key/increment', authenticateJWT(['Administrador General', '
     const key = req.params.key;
     const query = "INSERT INTO settings (`key`, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value + 1";
     pool.query(query, [key], (err, results) => {
-        if (err) { res.status(400).json({ "error": err.message }); return; }
+        if (err) { res.status(400).json({ error: err.message }); return; }
         pool.query('SELECT value FROM settings WHERE `key` = ?', [key], (err, results) => {
-            if (err) { res.status(400).json({ "error": err.message }); return; }
+            if (err) { res.status(400).json({ error: err.message }); return; }
             res.json({ value: parseInt(results[0].value, 10) });
         });
     });
 });
 
 
-// Iniciar la base de datos.
-// initializeDatabase().catch(err => {
-//     console.error('Fallo catastrófico en la inicialización de la base de datos.', err);
-// });
 
-// app.listen(PORT, () => {
-//     console.log(`Servidor corriendo en http://localhost:${PORT}`);
-// });
+// Función principal para iniciar el servidor en modo de desarrollo
+const startDevServer = async () => {
+    await initializeDatabase();
+    app.listen(PORT, () => {
+        console.log(`Servidor de desarrollo corriendo en http://localhost:${PORT}`);
+    });
+};
+
+// Solo iniciar el servidor si estamos en modo de desarrollo
+if (process.env.NODE_ENV === 'development') {
+    console.log('Modo de desarrollo detectado. Iniciando servidor localmente...');
+    startDevServer();
+}
 
 // En un entorno como LiteSpeed/Passenger, solo necesitamos exportar la app.
 // El servidor web se encarga de escuchar las peticiones.

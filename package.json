@@ -5,6 +5,7 @@
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
+    "dev": "cross-env NODE_ENV=development node server/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -20,5 +21,8 @@
     "multer": "^2.0.2",
     "mysql2": "^3.15.0",
     "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "cross-env": "^10.0.0"
   }
 }

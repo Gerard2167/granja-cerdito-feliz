@@ -41,20 +41,25 @@ const renderizarTabla = async () => {
     const gastos = await fetchGastos();
 
     if (gastos.length === 0) {
-        tablaGastosBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No hay gastos registrados.</td></tr>';
+        tablaGastosBody.innerHTML = '<tr><td colspan="9" style="text-align: center;">No hay gastos registrados.</td></tr>';
         return;
     }
 
     gastos.forEach((gasto) => {
         const fila = document.createElement('tr');
-        const escape = (str) => String(str).replace(/[&<>"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[tag] || tag));
+        const escape = (str) => String(str || '').replace(/[&<>"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[tag] || tag));
+        
+        const estadoClass = gasto.estado === 'Pagado' ? 'estado-pagado' : 'estado-pendiente';
+
         fila.innerHTML = `
             <td>${escape(gasto.fecha)}</td>
             <td>${escape(gasto.categoria)}</td>
-            <td>${escape(gasto.descripcion || '')}</td>
+            <td>${escape(gasto.proveedor)}</td>
+            <td>${escape(gasto.descripcion)}</td>
             <td>$${escape(gasto.monto)}</td>
-            <td>${escape(gasto.metodoPago || '')}</td>
-            <td>${escape(gasto.numeroFactura || '')}</td>
+            <td>${escape(gasto.metodoPago)}</td>
+            <td>${escape(gasto.numeroFactura)}</td>
+            <td><span class="${estadoClass}">${escape(gasto.estado)}</span></td>
             <td>
                 <button class="btn-editar" data-id="${gasto.id}">Editar</button>
                 <button class="btn-eliminar" data-id="${gasto.id}">Eliminar</button>
@@ -69,6 +74,7 @@ const resetFormulario = () => {
     if (submitButton) submitButton.textContent = 'Registrar Gasto';
     editGastoId = null;
     fechaGastoInput.value = `${yyyy}-${mm}-${dd}`;
+    document.getElementById('estado-gasto').value = 'Pendiente'; // Reset estado
 };
 
 formGasto.addEventListener('submit', async (e) => {
@@ -77,10 +83,12 @@ formGasto.addEventListener('submit', async (e) => {
     const gastoData = {
         fecha: fechaGastoInput.value,
         categoria: document.getElementById('categoria-gasto').value,
+        proveedor: document.getElementById('proveedor-gasto').value,
         descripcion: document.getElementById('descripcion-gasto').value,
         monto: parseFloat(document.getElementById('monto-gasto').value),
         metodoPago: document.getElementById('metodo-pago').value,
         numeroFactura: document.getElementById('numero-factura').value,
+        estado: document.getElementById('estado-gasto').value
     };
 
     try {
@@ -98,14 +106,15 @@ formGasto.addEventListener('submit', async (e) => {
         }
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
         }
         
         await renderizarTabla();
         resetFormulario();
     } catch (error) {
         console.error('Error al guardar gasto:', error);
-        alert('Error al guardar gasto. Verifique la consola y asegúrese de que el backend esté funcionando.');
+        alert(`Error al guardar gasto: ${error.message}`);
     }
 });
 
@@ -118,13 +127,14 @@ tablaGastosBody.addEventListener('click', async (e) => {
                     method: 'DELETE',
                 });
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
                 }
                 await renderizarTabla();
                 resetFormulario();
             } catch (error) {
                 console.error('Error al eliminar gasto:', error);
-                alert('Error al eliminar gasto. Verifique la consola.');
+                alert(`Error al eliminar gasto: ${error.message}`);
             }
         }
     }
@@ -138,10 +148,12 @@ tablaGastosBody.addEventListener('click', async (e) => {
             if (gasto) {
                 fechaGastoInput.value = gasto.fecha;
                 document.getElementById('categoria-gasto').value = gasto.categoria;
+                document.getElementById('proveedor-gasto').value = gasto.proveedor;
                 document.getElementById('descripcion-gasto').value = gasto.descripcion;
                 document.getElementById('monto-gasto').value = gasto.monto;
                 document.getElementById('metodo-pago').value = gasto.metodoPago;
                 document.getElementById('numero-factura').value = gasto.numeroFactura;
+                document.getElementById('estado-gasto').value = gasto.estado;
 
                 if (submitButton) submitButton.textContent = 'Actualizar Gasto';
                 editGastoId = gastoId;
@@ -156,4 +168,5 @@ tablaGastosBody.addEventListener('click', async (e) => {
 
 // Inicialización
 renderizarTabla();
+
 })();

@@ -21,6 +21,10 @@
         </select>
     </div>
     <div class="form-group">
+        <label for="proveedor-gasto">Proveedor (Opcional):</label>
+        <input type="text" id="proveedor-gasto" name="proveedor-gasto">
+    </div>
+    <div class="form-group">
         <label for="descripcion-gasto">Descripción:</label>
         <textarea id="descripcion-gasto" name="descripcion-gasto" rows="3"></textarea>
     </div>
@@ -42,6 +46,13 @@
         <label for="numero-factura">Número de Factura/Recibo (Opcional):</label>
         <input type="text" id="numero-factura" name="numero-factura">
     </div>
+    <div class="form-group">
+        <label for="estado-gasto">Estado:</label>
+        <select id="estado-gasto" name="estado-gasto" required>
+            <option value="Pendiente">Pendiente</option>
+            <option value="Pagado">Pagado</option>
+        </select>
+    </div>
     <button type="submit" class="btn-submit">Registrar Gasto</button>
 </form>
 
@@ -53,10 +64,12 @@
         <tr>
             <th>Fecha</th>
             <th>Categoría</th>
+            <th>Proveedor</th>
             <th>Descripción</th>
             <th>Monto</th>
             <th>Método</th>
             <th>Factura</th>
+            <th>Estado</th>
             <th>Acciones</th>
         </tr>
     </thead>

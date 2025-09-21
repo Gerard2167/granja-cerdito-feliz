@@ -91,14 +91,15 @@
             }
 
             if (!response.ok) {
-                throw new Error(`HTTPS error! status: ${response.status}`);
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || `HTTPS error! status: ${response.status}`);
             }
 
             await renderizarTabla(); // Actualiza la tabla.
             resetFormulario(); // Limpia el formulario.
         } catch (error) {
             console.error('Error al guardar cliente:', error);
-            alert('Error al guardar cliente. Verifique la consola.');
+            alert(`Error al guardar cliente: ${error.message}`);
         }
     });
 
@@ -112,13 +113,14 @@
                         method: 'DELETE',
                     });
                     if (!response.ok) {
-                        throw new Error(`HTTPS error! status: ${response.status}`);
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || `HTTPS error! status: ${response.status}`);
                     }
                     await renderizarTabla();
                     resetFormulario();
                 } catch (error) {
                     console.error('Error al eliminar cliente:', error);
-                    alert('Error al eliminar cliente. Verifique la consola.');
+                    alert(`Error al eliminar cliente: ${error.message}`);
                 }
             }
         }

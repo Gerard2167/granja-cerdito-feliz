@@ -15,6 +15,14 @@
             <option value="Egreso">Egreso</option>
         </select>
     </div>
+
+    <div id="asociar-documento-container" class="form-group" style="display: none;">
+        <label for="documento-asociado">Asociar a Venta/Gasto Pendiente:</label>
+        <select id="documento-asociado" name="documento-asociado">
+            <option value="">Seleccione un documento...</option>
+        </select>
+    </div>
+
     <div class="form-group">
         <label for="concepto-pago">Concepto:</label>
         <input type="text" id="concepto-pago" name="concepto-pago" required placeholder="Ej: Pago de cliente, Salario, Alquiler">
@@ -38,8 +46,8 @@
         <input type="text" id="entidad-relacionada" name="entidad-relacionada" placeholder="Ej: Nombre del cliente, Nombre del proveedor">
     </div>
     <div class="form-group">
-        <label for="referencia-pago">Referencia/ID de Transacción (Opcional):</label>
-        <input type="text" id="referencia-pago" name="referencia-pago">
+        <label for="referencia-pago">Referencia/ID de Transacción (se genera automáticamente):</label>
+        <input type="text" id="referencia-pago" name="referencia-pago" disabled>
     </div>
     <button type="submit" class="btn-submit">Registrar Pago</button>
 </form>
@@ -56,6 +64,7 @@
             <th>Monto</th>
             <th>Método</th>
             <th>Entidad</th>
+            <th>Referencia</th>
             <th>Acciones</th>
         </tr>
     </thead>

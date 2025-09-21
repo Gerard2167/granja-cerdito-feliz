@@ -44,7 +44,7 @@ const renderizarTabla = async () => {
             <td>${escape(producto.nombre)}</td>
             <td>${escape(producto.stock)}</td>
             <td>${escape(producto.unidad || '')}</td>
-            <td>$${escape(producto.precioVenta)}</td>
+            <td>${escape(producto.precioVenta)}</td>
             <td>${escape(producto.proveedor || '')}</td>
             <td>
                 <button class="btn-editar" data-id="${producto.id}">Editar</button>
@@ -89,14 +89,15 @@ formProducto.addEventListener('submit', async (e) => {
         }
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json().catch(() => ({})); // Intenta parsear JSON, si falla, usa objeto vacío
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
         }
         
         await renderizarTabla();
         resetFormulario();
     } catch (error) {
         console.error('Error al guardar producto:', error);
-        alert('Error al guardar producto. Verifique la consola y asegúrese de que el backend esté funcionando.');
+        alert(`Error al guardar producto: ${error.message}`);
     }
 });
 
@@ -109,13 +110,14 @@ tablaProductosBody.addEventListener('click', async (e) => {
                     method: 'DELETE',
                 });
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
                 }
                 await renderizarTabla();
                 resetFormulario();
             } catch (error) {
                 console.error('Error al eliminar producto:', error);
-                alert('Error al eliminar producto. Verifique la consola.');
+                alert(`Error al eliminar producto: ${error.message}`);
             }
         }
     }
@@ -148,4 +150,4 @@ tablaProductosBody.addEventListener('click', async (e) => {
 
 // Inicialización
 renderizarTabla();
-})();
+})();;

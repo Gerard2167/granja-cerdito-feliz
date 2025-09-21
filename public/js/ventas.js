@@ -125,7 +125,7 @@ const renderizarTabla = async () => {
                 <td>${escape(venta.fecha)}</td>
                 <td>${escape(venta.cliente)}</td>
                 <td>${escape(venta.producto)}</td>
-                <td>$${escape(venta.total)}</td>
+                <td>${escape(venta.total)}</td>
                 <td>${escape(venta.estadoPago)}</td>
                 <td>
                     <button class="btn-editar" data-id="${venta.id}">Editar</button>
@@ -178,13 +178,16 @@ formVenta.addEventListener('submit', async (e) => {
             });
         }
 
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
         
         await renderizarTabla();
         resetFormulario();
     } catch (error) {
         console.error('Error al guardar venta:', error);
-        alert('Error al guardar venta. Verifique la consola y asegúrese de que el backend esté funcionando.');
+        alert(`Error al guardar venta: ${error.message}`);
     }
 });
 
@@ -196,12 +199,15 @@ tablaVentasBody.addEventListener('click', async (e) => {
                 const response = await window.fetchWithAuth(`${API_URL_VENTAS}/${saleId}`, {
                     method: 'DELETE',
                 });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                }
                 await renderizarTabla();
                 resetFormulario();
             } catch (error) {
                 console.error('Error al eliminar venta:', error);
-                alert('Error al eliminar venta. Verifique la consola.');
+                alert(`Error al eliminar venta: ${error.message}`);
             }
         }
     }
@@ -293,13 +299,13 @@ tablaVentasBody.addEventListener('click', async (e) => {
                                     <tr>
                                         <td>${escape(venta.producto)}</td>
                                         <td>${escape(venta.cantidad)}</td>
-                                        <td>$${escape(venta.precioUnitario)}</td>
-                                        <td>$${escape(venta.total)}</td>
+                                        <td>${escape(venta.precioUnitario)}</td>
+                                        <td>${escape(venta.total)}</td>
                                     </tr>
                                 </tbody>
                             </table>
                             <div class="total">
-                                Total a Pagar: $${escape(venta.total)}
+                                Total a Pagar: ${escape(venta.total)}
                             </div>
                             <div class="footer">
                                 <p>Gracias por su compra.</p>
@@ -326,4 +332,4 @@ tablaVentasBody.addEventListener('click', async (e) => {
 renderizarTabla();
 cargarClientesEnSelect();
 cargarProductosEnSelect();
-})();
+})();;
