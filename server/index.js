@@ -7,7 +7,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 // Cargar variables de entorno desde el archivo .env apropiado
-require('dotenv').config({ path: path.resolve(__dirname, `../.env.${process.env.NODE_ENV || 'development'}`) });
+require('dotenv').config({ path: path.resolve(__dirname, `../.env.${process.env.NODE_ENV || 'production'}`) });
 
 const app = express();
 const PORT = process.env.PORT || 3000;
