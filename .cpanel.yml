@@ -1,4 +1,6 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/granjacf/domains/granja-cf.online/app
+    - cd $DEPLOYPATH
+    - npm install
     - /bin/rsync -av --exclude='.git' --exclude='.cpanel.yml' ./ $DEPLOYPATH
