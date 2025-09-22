@@ -1,5 +1,5 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/granjacf/public_html
+    - export DEPLOYPATH=/home/granjacf/domains/granja-cf.online/app
     - /bin/cp -R * $DEPLOYPATH
