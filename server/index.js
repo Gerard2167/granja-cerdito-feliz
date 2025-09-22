@@ -11,7 +11,7 @@ require('dotenv').config({ path: path.resolve(__dirname, `../.env.${process.env.
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = 'your_super_secret_key'; // ¡Cambia esto por una clave secreta real y segura!
+const JWT_SECRET = process.env.JWT_SECRET; // Cargar desde .env
 
 // --- INICIO DE LA CONFIGURACIÓN DE LA BASE DE DATOS ---
 const dbConfig = {
@@ -48,15 +48,67 @@ ${process.env.DB_DATABASE}
 
         const tables = {
             roles: `CREATE TABLE IF NOT EXISTS roles (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               nombre VARCHAR(255) NOT NULL UNIQUE            )`,
-            users: `CREATE TABLE IF NOT EXISTS users (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               username VARCHAR(255) NOT NULL UNIQUE,               nombre VARCHAR(255),               password VARCHAR(255) NOT NULL,               role_id INTEGER,               FOREIGN KEY (role_id) REFERENCES roles(id)            )`,
-            clientes: `CREATE TABLE IF NOT EXISTS clientes (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               nombre TEXT NOT NULL,               telefono TEXT,               email TEXT,               direccion TEXT            )`,
-            ventas: `CREATE TABLE IF NOT EXISTS ventas (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               cliente TEXT NOT NULL,               producto TEXT NOT NULL,               cantidad REAL NOT NULL,               precioUnitario REAL NOT NULL,               total REAL NOT NULL,               fecha TEXT NOT NULL,               estadoPago TEXT NOT NULL            )`,
-            inventario: `CREATE TABLE IF NOT EXISTS inventario (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               nombre TEXT NOT NULL,               descripcion TEXT,               stock REAL NOT NULL,               unidad TEXT,               precioCompra REAL,               precioVenta REAL NOT NULL,               proveedor TEXT            )`,
-            gastos: `CREATE TABLE IF NOT EXISTS gastos (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               fecha TEXT NOT NULL,               categoria TEXT NOT NULL,               descripcion TEXT,               monto REAL NOT NULL,               metodoPago TEXT,               numeroFactura TEXT            )`,
-            proveedores: `CREATE TABLE IF NOT EXISTS proveedores (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               nombre TEXT NOT NULL,               personaContacto TEXT,               telefono TEXT,               email TEXT,               direccion TEXT,               productosServicios TEXT,               terminosPago TEXT            )`,
-            pagos: `CREATE TABLE IF NOT EXISTS pagos (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               fecha TEXT NOT NULL,               tipo TEXT NOT NULL,               concepto TEXT NOT NULL,               monto REAL NOT NULL,               metodo TEXT NOT NULL,               entidadRelacionada TEXT,               referencia TEXT            )`,
-            colaboradores: `CREATE TABLE IF NOT EXISTS colaboradores (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               nombre TEXT NOT NULL,               cargo TEXT,               telefono TEXT,               email TEXT,               direccion TEXT,               fechaInicio TEXT,               salario REAL,               notas TEXT            )`,
-            calendarios: `CREATE TABLE IF NOT EXISTS calendarios (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               fecha TEXT NOT NULL,               tipo TEXT NOT NULL,               descripcion TEXT NOT NULL,               responsable TEXT,               estado TEXT NOT NULL            )`,
+            users: `CREATE TABLE IF NOT EXISTS users (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               username VARCHAR(255) NOT NULL UNIQUE,               nombre VARCHAR(255),               password VARCHAR(255) NOT NULL,               role_id INTEGER,
+               FOREIGN KEY (role_id) REFERENCES roles(id)            )`,
+            clientes: `CREATE TABLE IF NOT EXISTS clientes (               id INTEGER PRIMARY KEY AUTO_INCREMENT,
+               nombre TEXT NOT NULL,
+               telefono TEXT,
+               email TEXT,
+               direccion TEXT            )`,
+            ventas: `CREATE TABLE IF NOT EXISTS ventas (               id INTEGER PRIMARY KEY AUTO_INCREMENT,
+               cliente TEXT NOT NULL,
+               producto TEXT NOT NULL,
+               cantidad REAL NOT NULL,
+               precioUnitario REAL NOT NULL,
+               total REAL NOT NULL,
+               fecha TEXT NOT NULL,
+               estadoPago TEXT NOT NULL            )`,
+            inventario: `CREATE TABLE IF NOT EXISTS inventario (               id INTEGER PRIMARY KEY AUTO_INCREMENT,
+               nombre TEXT NOT NULL,
+               descripcion TEXT,
+               stock REAL NOT NULL,
+               unidad TEXT,
+               precioCompra REAL,
+               precioVenta REAL NOT NULL,
+               proveedor TEXT            )`,
+            gastos: `CREATE TABLE IF NOT EXISTS gastos (               id INTEGER PRIMARY KEY AUTO_INCREMENT,
+               fecha TEXT NOT NULL,
+               categoria TEXT NOT NULL,
+               descripcion TEXT,
+               monto REAL NOT NULL,
+               metodoPago TEXT,
+               numeroFactura TEXT            )`,
+            proveedores: `CREATE TABLE IF NOT EXISTS proveedores (               id INTEGER PRIMARY KEY AUTO_INCREMENT,
+               nombre TEXT NOT NULL,
+               personaContacto TEXT,
+               telefono TEXT,
+               email TEXT,
+               direccion TEXT,
+               productosServicios TEXT,
+               terminosPago TEXT            )`,
+            pagos: `CREATE TABLE IF NOT EXISTS pagos (               id INTEGER PRIMARY KEY AUTO_INCREMENT,
+               fecha TEXT NOT NULL,
+               tipo TEXT NOT NULL,
+               concepto TEXT NOT NULL,
+               monto REAL NOT NULL,
+               metodo TEXT NOT NULL,
+               entidadRelacionada TEXT,
+               referencia TEXT            )`,
+            colaboradores: `CREATE TABLE IF NOT EXISTS colaboradores (               id INTEGER PRIMARY KEY AUTO_INCREMENT,
+               nombre TEXT NOT NULL,
+               cargo TEXT,
+               telefono TEXT,
+               email TEXT,
+               direccion TEXT,
+               fechaInicio TEXT,
+               salario REAL,
+               notas TEXT            )`,
+            calendarios: `CREATE TABLE IF NOT EXISTS calendarios (               id INTEGER PRIMARY KEY AUTO_INCREMENT,
+               fecha TEXT NOT NULL,
+               tipo TEXT NOT NULL,
+               descripcion TEXT NOT NULL,
+               responsable TEXT,
+               estado TEXT NOT NULL            )`,
             settings: "CREATE TABLE IF NOT EXISTS settings (`key` VARCHAR(255) PRIMARY KEY, value TEXT)"
         };
 
@@ -424,7 +476,8 @@ app.delete('/clientes/:id', authenticateJWT(['Administrador General', 'Vendedor'
 
         if (results.affectedRows === 0) {
             return res.status(404).json({ error: "Cliente no encontrado" });
-        } else {
+        }
+        else {
             res.status(204).send();
         }
     } catch (err) {
@@ -481,7 +534,8 @@ app.put('/ventas/:id', authenticateJWT(['Administrador General', 'Vendedor']), a
 
         if (results.affectedRows === 0) {
             return res.status(404).json({ error: "Venta no encontrada" });
-        } else {
+        }
+        else {
             res.json({ id, ...req.body });
         }
     } catch (err) {
@@ -508,7 +562,8 @@ app.delete('/ventas/:id', authenticateJWT(['Administrador General', 'Vendedor'])
 
         if (results.affectedRows === 0) {
             return res.status(404).json({ error: "Venta no encontrada" });
-        } else {
+        }
+        else {
             res.status(204).send();
         }
     } catch (err) {
@@ -796,20 +851,20 @@ app.post('/sequence/:key/increment', authenticateJWT(['Administrador General', '
 
 
 
-// Función principal para iniciar el servidor en modo de desarrollo
-const startDevServer = async () => {
+// Función principal para iniciar el servidor
+const startServer = async () => {
     await initializeDatabase();
-    app.listen(PORT, () => {
-        console.log(`Servidor de desarrollo corriendo en http://localhost:${PORT}`);
-    });
+    // Solo escuchar en un puerto si no estamos en un entorno como LiteSpeed/Passenger
+    // donde el servidor web ya maneja esto.
+    if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
+        app.listen(PORT, () => {
+            console.log(`Servidor corriendo en http://localhost:${PORT}`);
+        });
+    }
 };
 
-// Solo iniciar el servidor si estamos en modo de desarrollo
-if (process.env.NODE_ENV === 'development') {
-    console.log('Modo de desarrollo detectado. Iniciando servidor localmente...');
-    startDevServer();
-}
+// Iniciar el servidor
+startServer();
 
-// En un entorno como LiteSpeed/Passenger, solo necesitamos exportar la app.
-// El servidor web se encarga de escuchar las peticiones.
+// Exportar la app para entornos como LiteSpeed/Passenger
 module.exports = app;
