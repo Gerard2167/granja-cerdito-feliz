@@ -11,7 +11,7 @@ require('dotenv').config({ path: path.resolve(__dirname, `../.env.${process.env.
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = 'your_super_secret_key'; // ¡Cambia esto por una clave secreta real y segura!
+const JWT_SECRET = process.env.JWT_SECRET; // Cargar desde .env
 
 // --- INICIO DE LA CONFIGURACIÓN DE LA BASE DE DATOS ---
 const dbConfig = {
