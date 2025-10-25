@@ -1,6 +1,12 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/granjacf/domains/granja-cf.online/app
+    - echo "--- Iniciando despliegue ---"
+    - /bin/cp -R * $DEPLOYPATH
     - cd $DEPLOYPATH
+    - echo "--- Instalando dependencias (npm install) ---"
     - npm install
-    - /bin/rsync -av --exclude='.git' --exclude='.cpanel.yml' ./ $DEPLOYPATH
+    - echo "--- Reiniciando la aplicación ---"
+    - mkdir -p $DEPLOYPATH/tmp
+    - touch $DEPLOYPATH/tmp/restart.txt
+    - echo "--- Despliegue finalizado ---"
