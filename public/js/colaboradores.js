@@ -4,8 +4,10 @@
 const formColaborador = document.getElementById('form-colaborador');
 const tablaColaboradoresBody = document.querySelector('#tabla-colaboradores tbody');
 const submitButton = formColaborador ? formColaborador.querySelector('button[type="submit"]') : null;
+const userSelect = document.getElementById('user-id');
 
 const API_URL_COLABORADORES = '/colaboradores';
+const API_URL_USERS = '/users';
 
 if (!formColaborador || !tablaColaboradoresBody) {
     return;
@@ -20,6 +22,33 @@ const yyyy = today.getFullYear();
 const mm = String(today.getMonth() + 1).padStart(2, '0');
 const dd = String(today.getDate()).padStart(2, '0');
 fechaInicioInput.value = `${yyyy}-${mm}-${dd}`;
+
+// Función para obtener usuarios del backend
+const fetchUsers = async () => {
+    try {
+        const response = await window.fetchWithAuth(API_URL_USERS);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error al obtener usuarios:', error);
+        return [];
+    }
+};
+
+// Función para poblar el dropdown de usuarios
+const populateUsersDropdown = async () => {
+    const users = await fetchUsers();
+    userSelect.innerHTML = '<option value="">Sin usuario asociado</option>';
+    users.forEach(user => {
+        const option = document.createElement('option');
+        option.value = user.id;
+        option.textContent = user.username;
+        userSelect.appendChild(option);
+    });
+};
 
 // Función para obtener colaboradores del backend
 const fetchColaboradores = async () => {
@@ -82,6 +111,7 @@ formColaborador.addEventListener('submit', async (e) => {
         fechaInicio: fechaInicioInput.value,
         salario: parseFloat(document.getElementById('salario-colaborador').value) || 0,
         notas: document.getElementById('notas-colaborador').value,
+        user_id: userSelect.value ? parseInt(userSelect.value, 10) : null,
     };
 
     try {
@@ -145,6 +175,7 @@ tablaColaboradoresBody.addEventListener('click', async (e) => {
                 fechaInicioInput.value = colaborador.fechaInicio;
                 document.getElementById('salario-colaborador').value = colaborador.salario;
                 document.getElementById('notas-colaborador').value = colaborador.notas;
+                userSelect.value = colaborador.user_id || '';
 
                 if (submitButton) submitButton.textContent = 'Actualizar Colaborador';
                 editColaboradorId = colaboradorId;
@@ -158,5 +189,11 @@ tablaColaboradoresBody.addEventListener('click', async (e) => {
 });
 
 // Inicialización
-renderizarTabla();
+const init = async () => {
+    await populateUsersDropdown();
+    await renderizarTabla();
+};
+
+init();
+
 })();

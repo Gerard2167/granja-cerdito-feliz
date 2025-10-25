@@ -23,8 +23,14 @@
         <textarea id="descripcion-evento" name="descripcion-evento" rows="3" required placeholder="Ej: Limpieza de corrales 1 y 2, Desparasitación de lechones"></textarea>
     </div>
     <div class="form-group">
-        <label for="responsable-evento">Responsable:</label>
-        <input type="text" id="responsable-evento" name="responsable-evento" placeholder="Ej: Juan Pérez, Equipo A">
+        <label for="observaciones-evento">Observaciones:</label>
+        <textarea id="observaciones-evento" name="observaciones-evento" rows="3" placeholder="Añadir observaciones..."></textarea>
+    </div>
+    <div class="form-group">
+        <label for="colaborador-id">Responsable:</label>
+        <select id="colaborador-id" name="colaborador-id" required>
+            <option value="">Seleccione un colaborador...</option>
+        </select>
     </div>
     <div class="form-group">
         <label for="estado-evento">Estado:</label>
@@ -33,6 +39,11 @@
             <option value="Completado">Completado</option>
             <option value="Cancelado">Cancelado</option>
         </select>
+    </div>
+    <div class="form-group">
+        <label for="media-upload">Subir Archivo (Foto/Video):</label>
+        <input type="file" id="media-upload" name="media-upload" accept="image/*,video/*">
+        <button type="button" id="btn-subir-media" class="btn-submit">Subir Archivo</button>
     </div>
     <button type="submit" class="btn-submit">Agregar Evento</button>
 </form>
@@ -43,11 +54,14 @@
 <table id="tabla-eventos" class="data-table">
     <thead>
         <tr>
-            <th>Fecha</th>
+            <th>Fecha Creación</th>
             <th>Tipo</th>
             <th>Descripción</th>
             <th>Responsable</th>
             <th>Estado</th>
+            <th>Observaciones</th>
+            <th>Fecha Completado</th>
+            <th>Adjunto</th>
             <th>Acciones</th>
         </tr>
     </thead>
