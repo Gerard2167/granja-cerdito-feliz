@@ -5,6 +5,7 @@ const mysql = require('mysql2');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
 
 // Cargar variables de entorno desde el archivo .env apropiado
 require('dotenv').config({ path: path.resolve(__dirname, `../.env.${process.env.NODE_ENV || 'development'}`) });
@@ -12,6 +13,19 @@ require('dotenv').config({ path: path.resolve(__dirname, `../.env.${process.env.
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = 'your_super_secret_key'; // ¡Cambia esto por una clave secreta real y segura!
+
+// --- INICIO DE LA CONFIGURACIÓN DE MULTER ---
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'server/uploads/')
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '-' + file.originalname)
+    }
+});
+const upload = multer({ storage: storage });
+// --- FIN DE LA CONFIGURACIÓN DE MULTER ---
+
 
 // --- INICIO DE LA CONFIGURACIÓN DE LA BASE DE DATOS ---
 const dbConfig = {
@@ -47,16 +61,90 @@ ${process.env.DB_DATABASE}
 
 
         const tables = {
-            roles: `CREATE TABLE IF NOT EXISTS roles (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               nombre VARCHAR(255) NOT NULL UNIQUE            )`,
-            users: `CREATE TABLE IF NOT EXISTS users (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               username VARCHAR(255) NOT NULL UNIQUE,               nombre VARCHAR(255),               password VARCHAR(255) NOT NULL,               role_id INTEGER,               FOREIGN KEY (role_id) REFERENCES roles(id)            )`,
-            clientes: `CREATE TABLE IF NOT EXISTS clientes (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               nombre TEXT NOT NULL,               telefono TEXT,               email TEXT,               direccion TEXT            )`,
-            ventas: `CREATE TABLE IF NOT EXISTS ventas (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               cliente TEXT NOT NULL,               producto TEXT NOT NULL,               cantidad REAL NOT NULL,               precioUnitario REAL NOT NULL,               total REAL NOT NULL,               fecha TEXT NOT NULL,               estadoPago TEXT NOT NULL            )`,
-            inventario: `CREATE TABLE IF NOT EXISTS inventario (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               nombre TEXT NOT NULL,               descripcion TEXT,               stock REAL NOT NULL,               unidad TEXT,               precioCompra REAL,               precioVenta REAL NOT NULL,               proveedor TEXT            )`,
-            gastos: `CREATE TABLE IF NOT EXISTS gastos (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               fecha TEXT NOT NULL,               categoria TEXT NOT NULL,               descripcion TEXT,               monto REAL NOT NULL,               metodoPago TEXT,               numeroFactura TEXT            )`,
-            proveedores: `CREATE TABLE IF NOT EXISTS proveedores (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               nombre TEXT NOT NULL,               personaContacto TEXT,               telefono TEXT,               email TEXT,               direccion TEXT,               productosServicios TEXT,               terminosPago TEXT            )`,
-            pagos: `CREATE TABLE IF NOT EXISTS pagos (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               fecha TEXT NOT NULL,               tipo TEXT NOT NULL,               concepto TEXT NOT NULL,               monto REAL NOT NULL,               metodo TEXT NOT NULL,               entidadRelacionada TEXT,               referencia TEXT            )`,
-            colaboradores: `CREATE TABLE IF NOT EXISTS colaboradores (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               nombre TEXT NOT NULL,               cargo TEXT,               telefono TEXT,               email TEXT,               direccion TEXT,               fechaInicio TEXT,               salario REAL,               notas TEXT            )`,
-            calendarios: `CREATE TABLE IF NOT EXISTS calendarios (               id INTEGER PRIMARY KEY AUTO_INCREMENT,               fecha TEXT NOT NULL,               tipo TEXT NOT NULL,               descripcion TEXT NOT NULL,               responsable TEXT,               estado TEXT NOT NULL            )`,
+            roles: `CREATE TABLE IF NOT EXISTS roles (               id INTEGER PRIMARY KEY AUTO_INCREMENT,
+               nombre VARCHAR(255) NOT NULL UNIQUE            )`, 
+            users: `CREATE TABLE IF NOT EXISTS users (               id INTEGER PRIMARY KEY AUTO_INCREMENT,
+               username VARCHAR(255) NOT NULL UNIQUE,
+               nombre VARCHAR(255),
+               password VARCHAR(255) NOT NULL,
+               role_id INTEGER,
+               FOREIGN KEY (role_id) REFERENCES roles(id)            )`,
+            clientes: `CREATE TABLE IF NOT EXISTS clientes (               id INTEGER PRIMARY KEY AUTO_INCREMENT,
+               nombre TEXT NOT NULL,
+               telefono TEXT,
+               email TEXT,
+               direccion TEXT            )`,
+            ventas: `CREATE TABLE IF NOT EXISTS ventas (               id INTEGER PRIMARY KEY AUTO_INCREMENT,
+               cliente TEXT NOT NULL,
+               producto TEXT NOT NULL,
+               cantidad REAL NOT NULL,
+               precioUnitario REAL NOT NULL,
+               total REAL NOT NULL,
+               fecha TEXT NOT NULL,
+               estadoPago TEXT NOT NULL            )`,
+            inventario: `CREATE TABLE IF NOT EXISTS inventario (               id INTEGER PRIMARY KEY AUTO_INCREMENT,
+               nombre TEXT NOT NULL,
+               descripcion TEXT,
+               stock REAL NOT NULL,
+               unidad TEXT,
+               precioCompra REAL,
+               precioVenta REAL NOT NULL,
+               proveedor TEXT            )`,
+            gastos: `CREATE TABLE IF NOT EXISTS gastos (               id INTEGER PRIMARY KEY AUTO_INCREMENT,
+               fecha TEXT NOT NULL,
+               categoria TEXT NOT NULL,
+               descripcion TEXT,
+               monto REAL NOT NULL,
+               metodoPago TEXT,
+               numeroFactura TEXT            )`,
+            proveedores: `CREATE TABLE IF NOT EXISTS proveedores (               id INTEGER PRIMARY KEY AUTO_INCREMENT,
+               nombre TEXT NOT NULL,
+               personaContacto TEXT,
+               telefono TEXT,
+               email TEXT,
+               direccion TEXT,
+               productosServicios TEXT,
+               terminosPago TEXT            )`,
+            pagos: `CREATE TABLE IF NOT EXISTS pagos (               id INTEGER PRIMARY KEY AUTO_INCREMENT,
+               fecha TEXT NOT NULL,
+               tipo TEXT NOT NULL,
+               concepto TEXT NOT NULL,
+               monto REAL NOT NULL,
+               metodo TEXT NOT NULL,
+               entidadRelacionada TEXT,
+               referencia TEXT            )`,
+            colaboradores: `CREATE TABLE IF NOT EXISTS colaboradores (
+               id INTEGER PRIMARY KEY AUTO_INCREMENT,
+               nombre TEXT NOT NULL,
+               cargo TEXT,
+               telefono TEXT,
+               email TEXT,
+               direccion TEXT,
+               fechaInicio TEXT,
+               salario REAL,
+               notas TEXT,
+               user_id INTEGER,
+               FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+            )`,
+                        calendarios: `CREATE TABLE IF NOT EXISTS calendarios (               id INTEGER PRIMARY KEY AUTO_INCREMENT,
+                           fecha TEXT NOT NULL,
+                           tipo TEXT NOT NULL,
+                           descripcion TEXT NOT NULL,
+                           colaborador_id INTEGER,
+                           estado TEXT NOT NULL,
+                           observaciones TEXT,
+                           fecha_completado DATETIME,
+                           fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+                           FOREIGN KEY (colaborador_id) REFERENCES colaboradores(id)
+                        )`,
+            calendario_media: `CREATE TABLE IF NOT EXISTS calendario_media (
+               id INTEGER PRIMARY KEY AUTO_INCREMENT,
+               calendario_id INTEGER NOT NULL,
+               file_path TEXT NOT NULL,
+               file_type TEXT,
+               uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+               FOREIGN KEY (calendario_id) REFERENCES calendarios(id) ON DELETE CASCADE
+            )`,
             settings: "CREATE TABLE IF NOT EXISTS settings (`key` VARCHAR(255) PRIMARY KEY, value TEXT)"
         };
 
@@ -70,7 +158,7 @@ ${process.env.DB_DATABASE}
             await connection.query("ALTER TABLE users ADD COLUMN nombre VARCHAR(255)");
             console.log('Columna \'nombre\' añadida a la tabla users.');
         } catch (alterError) {
-            if (alterError.code === 'ER_DUP_FIELD_NAME') {
+            if (alterError.code === 'ER_DUP_FIELDNAME') {
                 console.log('Columna \'nombre\' ya existe en la tabla users.');
             } else {
                 console.error('Error al añadir columna \'nombre\' a la tabla users:', alterError);
@@ -82,7 +170,7 @@ ${process.env.DB_DATABASE}
             await connection.query("ALTER TABLE clientes ADD COLUMN creado_por_id INTEGER, ADD FOREIGN KEY (creado_por_id) REFERENCES users(id)");
             console.log('Columna \'creado_por_id\' añadida a la tabla clientes.');
         } catch (alterError) {
-            if (alterError.code === 'ER_DUP_FIELD_NAME' || alterError.code === 'ER_FK_DUP_NAME') {
+            if (alterError.code === 'ER_DUP_FIELDNAME' || alterError.code === 'ER_FK_DUPNAME') {
                 console.log('Columna o FK \'creado_por_id\' ya existe en la tabla clientes.');
             } else {
                 console.error('Error al añadir columna \'creado_por_id\' a la tabla clientes:', alterError);
@@ -94,7 +182,7 @@ ${process.env.DB_DATABASE}
             await connection.query("ALTER TABLE ventas ADD COLUMN creado_por_id INTEGER, ADD FOREIGN KEY (creado_por_id) REFERENCES users(id)");
             console.log('Columna \'creado_por_id\' añadida a la tabla ventas.');
         } catch (alterError) {
-            if (alterError.code === 'ER_DUP_FIELD_NAME' || alterError.code === 'ER_FK_DUP_NAME') {
+            if (alterError.code === 'ER_DUP_FIELDNAME' || alterError.code === 'ER_FK_DUPNAME') {
                 console.log('Columna o FK \'creado_por_id\' ya existe en la tabla ventas.');
             } else {
                 console.error('Error al añadir columna \'creado_por_id\' a la tabla ventas:', alterError);
@@ -106,7 +194,7 @@ ${process.env.DB_DATABASE}
             await connection.query("ALTER TABLE gastos ADD COLUMN estado VARCHAR(255) NOT NULL DEFAULT 'Pendiente'");
             console.log('Columna \'estado\' añadida a la tabla gastos.');
         } catch (alterError) {
-            if (alterError.code === 'ER_DUP_FIELD_NAME') {
+            if (alterError.code === 'ER_DUP_FIELDNAME') {
                 console.log('Columna \'estado\' ya existe en la tabla gastos.');
             } else {
                 console.error('Error al añadir columna \'estado\' a la tabla gastos:', alterError);
@@ -118,10 +206,70 @@ ${process.env.DB_DATABASE}
             await connection.query("ALTER TABLE gastos ADD COLUMN proveedor TEXT");
             console.log('Columna \'proveedor\' añadida a la tabla gastos.');
         } catch (alterError) {
-            if (alterError.code === 'ER_DUP_FIELD_NAME') {
+            if (alterError.code === 'ER_DUP_FIELDNAME') {
                 console.log('Columna \'proveedor\' ya existe en la tabla gastos.');
             } else {
                 console.error('Error al añadir columna \'proveedor\' a la tabla gastos:', alterError);
+            }
+        }
+
+        // Add 'user_id' column to colaboradores table if it doesn't exist
+        try {
+            await connection.query("ALTER TABLE colaboradores ADD COLUMN user_id INTEGER, ADD FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL");
+            console.log('Columna \'user_id\' añadida a la tabla colaboradores.');
+        } catch (alterError) {
+            if (alterError.code === 'ER_DUP_FIELDNAME' || alterError.code === 'ER_FK_DUPNAME') {
+                console.log('Columna o FK \'user_id\' ya existe en la tabla colaboradores.');
+            } else {
+                console.error('Error al añadir columna \'user_id\' a la tabla colaboradores:', alterError);
+            }
+        }
+
+        // Add 'colaborador_id' column to calendarios table if it doesn't exist
+        try {
+            await connection.query("ALTER TABLE calendarios ADD COLUMN colaborador_id INTEGER, ADD FOREIGN KEY (colaborador_id) REFERENCES colaboradores(id)");
+            console.log('Columna \'colaborador_id\' ya existe en la tabla calendarios.');
+        } catch (alterError) {
+            if (alterError.code === 'ER_DUP_FIELDNAME' || alterError.code === 'ER_FK_DUPNAME') {
+                console.log('Columna o FK \'colaborador_id\' ya existe en la tabla calendarios.');
+            } else {
+                console.error('Error al añadir columna \'colaborador_id\' a la tabla calendarios:', alterError);
+            }
+        }
+
+        // Add 'observaciones' column to calendarios table if it doesn't exist
+        try {
+            await connection.query("ALTER TABLE calendarios ADD COLUMN observaciones TEXT");
+            console.log('Columna \'observaciones\' añadida a la tabla calendarios.');
+        } catch (alterError) {
+            if (alterError.code === 'ER_DUP_FIELDNAME') {
+                console.log('Columna \'observaciones\' ya existe en la tabla calendarios.');
+            } else {
+                console.error('Error al añadir columna \'observaciones\' a la tabla calendarios:', alterError);
+            }
+        }
+
+        // Add 'fecha_completado' column to calendarios table if it doesn't exist
+        try {
+            await connection.query("ALTER TABLE calendarios ADD COLUMN fecha_completado DATETIME");
+            console.log('Columna \'fecha_completado\' añadida a la tabla calendarios.');
+        } catch (alterError) {
+            if (alterError.code === 'ER_DUP_FIELDNAME') {
+                console.log('Columna \'fecha_completado\' ya existe en la tabla calendarios.');
+            } else {
+                console.error('Error al añadir columna \'fecha_completado\' a la tabla calendarios:', alterError);
+            }
+        }
+
+        // Add 'fecha_creacion' column to calendarios table if it doesn't exist
+        try {
+            await connection.query("ALTER TABLE calendarios ADD COLUMN fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP");
+            console.log('Columna \'fecha_creacion\' añadida a la tabla calendarios.');
+        } catch (alterError) {
+            if (alterError.code === 'ER_DUP_FIELDNAME') {
+                console.log('Columna \'fecha_creacion\' ya existe en la tabla calendarios.');
+            } else {
+                console.error('Error al añadir columna \'fecha_creacion\' a la tabla calendarios:', alterError);
             }
         }
 
@@ -163,8 +311,20 @@ ${process.env.DB_DATABASE}
 
 // Middleware
 app.use(cors());
-app.use(bodyParser.json());
+// Aumentar el límite de tamaño del payload y manejar los parsers condicionalmente
+app.use((req, res, next) => {
+    if (req.is('json')) {
+        bodyParser.json({ limit: '50mb' })(req, res, next);
+    } else if (req.is('urlencoded')) {
+        bodyParser.urlencoded({ limit: '50mb', extended: true })(req, res, next);
+    } else {
+        // Si no es JSON o urlencoded (ej. multipart/form-data), simplemente continuamos
+        next();
+    }
+});
+
 app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // --- INICIO DE RUTAS DE AUTENTICACIÓN Y USUARIOS ---
 
@@ -397,7 +557,7 @@ app.put('/clientes/:id', authenticateJWT(['Administrador General', 'Vendedor']),
 
         if (results.affectedRows === 0) {
             return res.status(404).json({ error: "Cliente no encontrado" });
-        } else {
+        } else { 
             res.json({ id, nombre, telefono, email, direccion });
         }
     } catch (err) {
@@ -709,19 +869,35 @@ app.get('/colaboradores', authenticateJWT(['Administrador General', 'Supervisor 
     });
 });
 app.post('/colaboradores', authenticateJWT(['Administrador General']), (req, res) => {
-    const { nombre, cargo, telefono, email, direccion, fechaInicio, salario, notas } = req.body;
-    const query = `INSERT INTO colaboradores (nombre, cargo, telefono, email, direccion, fechaInicio, salario, notas) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-    const params = [nombre, cargo, telefono, email, direccion, fechaInicio, salario, notas];
+    console.log('Solicitud POST a /colaboradores recibida', req.body);
+    const { nombre, cargo, telefono, email, direccion, fechaInicio, salario, notas, user_id } = req.body;
+
+    // El user_id es opcional, puede ser null
+    if (!nombre) {
+        return res.status(400).json({ error: 'El campo nombre es obligatorio.' });
+    }
+
+    const query = `
+        INSERT INTO colaboradores (nombre, cargo, telefono, email, direccion, fechaInicio, salario, notas, user_id) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    const params = [nombre, cargo, telefono, email, direccion, fechaInicio, salario, notas, user_id || null];
+
     pool.query(query, params, (err, results) => {
-        if (err) { res.status(400).json({ error: err.message }); return; }
+        if (err) {
+            console.error('Error al guardar colaborador:', err);
+            // Asegurarse de que el error que se envía al cliente es genérico para no exponer detalles
+            res.status(500).json({ error: 'Error interno al guardar el colaborador.' });
+            return;
+        }
         res.status(201).json({ id: results.insertId, ...req.body });
     });
 });
 app.put('/colaboradores/:id', authenticateJWT(['Administrador General']), (req, res) => {
-    const { nombre, cargo, telefono, email, direccion, fechaInicio, salario, notas } = req.body;
+    const { nombre, cargo, telefono, email, direccion, fechaInicio, salario, notas, user_id } = req.body;
     const id = parseInt(req.params.id);
-    const query = `UPDATE colaboradores SET nombre = ?, cargo = ?, telefono = ?, email = ?, direccion = ?, fechaInicio = ?, salario = ?, notas = ? WHERE id = ?`;
-    const params = [nombre, cargo, telefono, email, direccion, fechaInicio, salario, notas, id];
+    const query = `UPDATE colaboradores SET nombre = ?, cargo = ?, telefono = ?, email = ?, direccion = ?, fechaInicio = ?, salario = ?, notas = ?, user_id = ? WHERE id = ?`;
+    const params = [nombre, cargo, telefono, email, direccion, fechaInicio, salario, notas, user_id, id];
     pool.query(query, params, (err, results) => {
         if (err) { res.status(400).json({ error: err.message }); return; }
         if (results.affectedRows === 0) { res.status(404).json({ error: "Colaborador no encontrado" }); }
@@ -738,31 +914,93 @@ app.delete('/colaboradores/:id', authenticateJWT(['Administrador General']), (re
 });
 
 // Rutas API para Calendarios
-app.get('/calendarios', authenticateJWT(['Administrador General', 'Colaborador / Empleado', 'Supervisor de Producción']), (req, res) => {
-    pool.query("SELECT * FROM calendarios", (err, results) => {
-        if (err) { res.status(400).json({ error: err.message }); return; }
-        res.json(results);
-    });
+app.get('/calendarios', authenticateJWT(['Administrador General', 'Colaborador / Empleado', 'Supervisor de Producción']), async (req, res) => {
+    const user = req.user;
+
+    try {
+        if (user.role === 'Administrador General' || user.role === 'Supervisor de Producción') {
+            // Los administradores y supervisores pueden ver todos los calendarios
+            const [results] = await pool.promise().query(`
+                SELECT c.*, col.nombre as nombre_colaborador,
+                GROUP_CONCAT(CONCAT('/uploads/', REPLACE(cm.file_path, 'server\\\\uploads\\\\', ''))) AS media_urls
+                FROM calendarios c 
+                LEFT JOIN colaboradores col ON c.colaborador_id = col.id
+                LEFT JOIN calendario_media cm ON c.id = cm.calendario_id
+                GROUP BY c.id, col.nombre
+            `);
+            res.json(results);
+        } else {
+            // Los colaboradores solo ven sus tareas asignadas
+            const [colaborador] = await pool.promise().query('SELECT id FROM colaboradores WHERE user_id = ?', [user.id]);
+            if (colaborador.length === 0) {
+                return res.json([]); // No es un colaborador o no está enlazado, no devuelve tareas
+            }
+            const colaboradorId = colaborador[0].id;
+            const [results] = await pool.promise().query(`
+                SELECT c.*, col.nombre as nombre_colaborador,
+                GROUP_CONCAT(CONCAT('/uploads/', REPLACE(cm.file_path, 'server\\\\uploads\\\\', ''))) AS media_urls
+                FROM calendarios c 
+                LEFT JOIN colaboradores col ON c.colaborador_id = col.id
+                LEFT JOIN calendario_media cm ON c.id = cm.calendario_id
+                WHERE c.colaborador_id = ?
+                GROUP BY c.id, col.nombre
+            `, [colaboradorId]);
+            res.json(results);
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 app.post('/calendarios', authenticateJWT(['Administrador General', 'Supervisor de Producción']), (req, res) => {
-    const { fecha, tipo, descripcion, responsable, estado } = req.body;
-    const query = `INSERT INTO calendarios (fecha, tipo, descripcion, responsable, estado) VALUES (?, ?, ?, ?, ?)`;
-    const params = [fecha, tipo, descripcion, responsable, estado];
+    const { fecha, tipo, descripcion, colaborador_id, estado, observaciones } = req.body;
+    const query = `INSERT INTO calendarios (fecha, tipo, descripcion, colaborador_id, estado, observaciones) VALUES (?, ?, ?, ?, ?, ?)`;
+    const params = [fecha, tipo, descripcion, colaborador_id, estado, observaciones];
     pool.query(query, params, (err, results) => {
         if (err) { res.status(400).json({ error: err.message }); return; }
         res.status(201).json({ id: results.insertId, ...req.body });
     });
 });
-app.put('/calendarios/:id', authenticateJWT(['Administrador General', 'Supervisor de Producción']), (req, res) => {
-    const { fecha, tipo, descripcion, responsable, estado } = req.body;
-    const id = parseInt(req.params.id);
-    const query = `UPDATE calendarios SET fecha = ?, tipo = ?, descripcion = ?, responsable = ?, estado = ? WHERE id = ?`;
-    const params = [fecha, tipo, descripcion, responsable, estado, id];
-    pool.query(query, params, (err, results) => {
-        if (err) { res.status(400).json({ error: err.message }); return; }
-        if (results.affectedRows === 0) { res.status(404).json({ error: "Evento de calendario no encontrado" }); }
-        else { res.json({ id, ...req.body }); }
-    });
+app.put('/calendarios/:id', authenticateJWT(['Administrador General', 'Supervisor de Producción', 'Colaborador / Empleado']), async (req, res) => {
+    const { id } = req.params;
+    const user = req.user;
+
+    try {
+        if (user.role === 'Colaborador / Empleado') {
+            const { estado, observaciones } = req.body;
+            let query = 'UPDATE calendarios SET estado = ?, observaciones = ?';
+            const params = [estado, observaciones];
+
+            if (estado === 'Completado') {
+                query += ', fecha_completado = NOW()';
+            }
+
+            query += ' WHERE id = ?';
+            params.push(id);
+
+            const [results] = await pool.promise().query(query, params);
+
+            if (results.affectedRows === 0) {
+                return res.status(404).json({ error: "Evento de calendario no encontrado" });
+            } else {
+                res.json({ id, ...req.body });
+            }
+
+        } else {
+            const { fecha, tipo, descripcion, colaborador_id, estado, observaciones } = req.body;
+            const query = `UPDATE calendarios SET fecha = ?, tipo = ?, descripcion = ?, colaborador_id = ?, estado = ?, observaciones = ? WHERE id = ?`;
+            const params = [fecha, tipo, descripcion, colaborador_id, estado, observaciones, id];
+            const [results] = await pool.promise().query(query, params);
+
+            if (results.affectedRows === 0) {
+                return res.status(404).json({ error: "Evento de calendario no encontrado" });
+            } else {
+                res.json({ id, ...req.body });
+            }
+        }
+    } catch (err) {
+        console.error('Error al actualizar evento de calendario:', err);
+        res.status(500).json({ error: err.message });
+    }
 });
 app.delete('/calendarios/:id', authenticateJWT(['Administrador General']), (req, res) => {
     const id = parseInt(req.params.id);
@@ -772,6 +1010,43 @@ app.delete('/calendarios/:id', authenticateJWT(['Administrador General']), (req,
         else { res.status(204).send(); }
     });
 });
+
+app.post('/calendarios/:id/media', authenticateJWT(['Administrador General', 'Colaborador / Empleado', 'Supervisor de Producción']), upload.single('media'), async (req, res) => {
+    const { id } = req.params;
+    const file = req.file;
+
+    if (!file) {
+        return res.status(400).json({ error: 'No se subió ningún archivo.' });
+    }
+
+    try {
+        // Check for image limit (max 3 images per task)
+        const [existingMedia] = await pool.promise().query('SELECT COUNT(*) as count FROM calendario_media WHERE calendario_id = ?', [id]);
+        if (existingMedia[0].count >= 3) {
+            // Optionally delete the uploaded file if it exceeds the limit
+            // fs.unlinkSync(file.path); // Requires 'fs' module
+            return res.status(400).json({ error: 'Solo se permiten un máximo de 3 imágenes por tarea.' });
+        }
+
+        const query = 'INSERT INTO calendario_media (calendario_id, file_path, file_type) VALUES (?, ?, ?)';
+        await pool.promise().query(query, [id, file.path, file.mimetype]);
+        res.status(201).json({ message: 'Archivo subido con éxito.', filePath: `/uploads/${path.basename(file.path)}` });
+    } catch (err) {
+        console.error('Error al subir archivo de calendario:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/calendarios/:id/media', authenticateJWT(['Administrador General', 'Colaborador / Empleado', 'Supervisor de Producción']), async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [media] = await pool.promise().query('SELECT * FROM calendario_media WHERE calendario_id = ?', [id]);
+        res.json(media);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 
 // Rutas API para Secuenciales (Facturas/Recibos)
 app.get('/sequence/:key', authenticateJWT(['Administrador General', 'Vendedor']), (req, res) => {

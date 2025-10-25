@@ -54,9 +54,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const token = localStorage.getItem('token');
         const headers = {
             ...options.headers,
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Authorization': `Bearer ${token}`
         };
+
+        // No establecer 'Content-Type' si el body es FormData
+        if (!(options.body instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
+        }
 
         const response = await fetch(url, { ...options, headers });
 
