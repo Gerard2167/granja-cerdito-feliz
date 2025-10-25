@@ -291,4 +291,6 @@ const init = async () => {
 
 init();
 
+// Forzando la detección de cambios para Git.
+
 })();

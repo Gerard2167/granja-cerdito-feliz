@@ -1087,4 +1087,5 @@ if (process.env.NODE_ENV === 'development') {
 
 // En un entorno como LiteSpeed/Passenger, solo necesitamos exportar la app.
 // El servidor web se encarga de escuchar las peticiones.
+// Forzando la detección de cambios para Git.
 module.exports = app;
